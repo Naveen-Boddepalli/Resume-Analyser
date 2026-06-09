@@ -85,9 +85,9 @@ Dataset Type: Tabular
 
 License: CC0 Public Domain
 
-Possible Machine Learning Tasks
+## Possible Machine Learning Tasks
 
-## This dataset can be used for:
+This dataset can be used for:
 
 Placement prediction using classification models
 
