@@ -1,5 +1,3 @@
-Clean, lean, no fluff. Here's the updated plan:
-
 ---
 
 ## AI Placement Readiness Platform — MVP Plan
@@ -22,7 +20,7 @@ Use the **Kaggle Campus Recruitment / Engineering Placement dataset** (pin the U
 
 **NLP** — spaCy, PyMuPDF, python-docx
 
-**LLM** — Gemini 2.0 Flash via API (one structured call per resume, ~$0.001 cost)
+**LLM** — Groq via API (one structured call per resume)
 
 **Database** — PostgreSQL (Supabase) with Supabase Storage for resume files
 
@@ -161,25 +159,13 @@ Respond only in JSON: {{"recommendations": ["...", "...", "...", "..."]}}
 """
 ```
 
-Use Gemini 2.0 Flash. Parse the JSON response. If parsing fails, fall back to a hardcoded set of generic recommendations — don't let an LLM failure break the whole result page.
+Use Groq via API. Parse the JSON response. If parsing fails, fall back to a hardcoded set of generic recommendations — don't let an LLM failure break the whole result page.
 
 ---
 
-### Phase 6 — ATS Score (Week 6, same week as LLM)
-
-Five-component heuristic. Keep it simple, be transparent in the UI that it's an approximation:
-
-| Component | Max | Logic |
-|---|---|---|
-| Contact info | 10 | email + phone present |
-| Skills section | 25 | keyword match against a 50-word list |
-| Education | 20 | degree + CGPA present |
-| Experience/internships | 25 | internship count × weight |
-| Projects | 20 | project count × weight |
-
 ---
 
-### Phase 7 — FastAPI Backend (Week 7)
+### Phase 6 — FastAPI Backend (Week 7)
 
 Four endpoints only:
 
@@ -192,17 +178,17 @@ POST /demo            → runs analysis on a hardcoded sample resume (no upload)
 
 The `BackgroundTasks` handler runs the full pipeline: parse → feature map → predict → SHAP → LLM → save to DB.
 
-Add a `predictions` table with columns: `job_id`, `placement_prob`, `salary_low`, `salary_high`, `ats_score`, `shap_values` (jsonb), `recommendations` (jsonb), `strengths` (jsonb), `weaknesses` (jsonb), `created_at`.
+Add a `predictions` table with columns: `job_id`, `placement_prob`, `salary_low`, `salary_high`, `shap_values` (jsonb), `recommendations` (jsonb), `strengths` (jsonb), `weaknesses` (jsonb), `created_at`.
 
 ---
 
-### Phase 8 — Frontend Dashboard (Week 7, parallel with backend)
+### Phase 7 — Frontend Dashboard (Week 7, parallel with backend)
 
 Build these four components, nothing else for MVP:
 
 **Upload card** — drag-and-drop PDF/DOCX, submit button, loading state with step text ("Parsing resume… Running analysis… Generating recommendations…")
 
-**Summary row** — three stat cards: Placement Probability, Salary Range, ATS Score
+**Summary row** — stat cards: Placement Probability and Salary Range
 
 **SHAP panel** — simple horizontal bar chart (use recharts or just CSS bars) showing strengths in green, weaknesses in red. No need for a full SHAP waterfall plot.
 
@@ -212,7 +198,7 @@ Add the `/demo` endpoint to the landing page so judges/viewers can see results w
 
 ---
 
-### Phase 9 — Deployment (Week 8)
+### Phase 8 — Deployment (Week 8)
 
 - FastAPI → Render (free tier, set `--workers 1` to stay within RAM)
 - Next.js → Vercel
@@ -230,14 +216,14 @@ Add the `/demo` endpoint to the landing page so judges/viewers can see results w
 | 3 | Resume parser — robustness testing |
 | 4 | Feature mapping layer |
 | 5 | SHAP integration |
-| 6 | LLM recommendations + ATS score |
+| 6 | LLM recommendations |
 | 7 | FastAPI endpoints + Next.js dashboard |
 | 8 | Deployment + demo mode + README |
 
 ---
 
-### What's intentionally excluded from this version
+### Additional features that can be added in this version, after completion of the present plan.
 
 Celery, Redis, MLflow, FAISS, Sentence Transformers, assessment module, what-if sliders, PDF export, user authentication beyond basic JWT. All valid V2 additions — none of them are needed to have a working, impressive MVP.
 
-The deliverable at Week 8 is: upload a resume PDF, get a placement probability, salary range, ATS score, SHAP breakdown, and 4 recommendations. That's the whole product. Build that cleanly before adding anything else.
+The deliverable at Week 8 is: upload a resume PDF, get a placement probability, salary range, SHAP breakdown, and 4 recommendations. That's the whole product. Build that cleanly before adding anything else.
