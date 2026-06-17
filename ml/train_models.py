@@ -1,7 +1,5 @@
 import os
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
 from catboost import CatBoostClassifier, CatBoostRegressor
 import joblib
 
@@ -16,7 +14,7 @@ def main():
     df = pd.read_csv(data_path)
     
     # Features and targets
-    features = ['cgpa', 'internships_count', 'projects_count', 'coding_skill_score', 'communication_skill_score', 'leadership_score']
+    features = ['cgpa', 'internships_count', 'projects_count', 'coding_skill_score', 'communication_skill_score', 'leadership_score', 'college_tier', 'branch']
     
     df['placement_status'] = df['placement_status'].map({'Not Placed': 0, 'Placed': 1})
     
@@ -24,14 +22,9 @@ def main():
     y_class = df['placement_status']
     
     print("Training placement status classifiers...")
-    # Train classifiers
-    lr = LogisticRegression(random_state=42, max_iter=1000)
-    lr.fit(X, y_class)
+    cat_features = ['college_tier', 'branch']
     
-    rf = RandomForestClassifier(random_state=42)
-    rf.fit(X, y_class)
-    
-    cb_class = CatBoostClassifier(verbose=0, random_state=42)
+    cb_class = CatBoostClassifier(verbose=0, random_state=42, cat_features=cat_features)
     cb_class.fit(X, y_class)
     
     # Save CatBoost classifier
@@ -46,7 +39,7 @@ def main():
     y_salary = df_placed['salary_package_lpa']
     
     # CatBoost Regressor - Low (alpha=0.25)
-    cb_reg_low = CatBoostRegressor(loss_function='Quantile:alpha=0.25', verbose=0, random_state=42)
+    cb_reg_low = CatBoostRegressor(loss_function='Quantile:alpha=0.25', verbose=0, random_state=42, cat_features=cat_features)
     cb_reg_low.fit(X_placed, y_salary)
     
     salary_low_path = os.path.join(models_dir, 'salary_low_model.pkl')
@@ -54,7 +47,7 @@ def main():
     print(f"Saved low salary model to {salary_low_path}")
     
     # CatBoost Regressor - High (alpha=0.75)
-    cb_reg_high = CatBoostRegressor(loss_function='Quantile:alpha=0.75', verbose=0, random_state=42)
+    cb_reg_high = CatBoostRegressor(loss_function='Quantile:alpha=0.75', verbose=0, random_state=42, cat_features=cat_features)
     cb_reg_high.fit(X_placed, y_salary)
     
     salary_high_path = os.path.join(models_dir, 'salary_high_model.pkl')

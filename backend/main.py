@@ -71,6 +71,8 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
             "internships_count": parsed_data.get("internships_count", 0),
             "certifications_count": parsed_data.get("certifications_count", 0),
             "skills": parsed_data.get("skills_list", []),
+            "college_tier": parsed_data.get("college_tier", "Tier 2"),
+            "branch": parsed_data.get("branch", "CSE"),
             "coding_score": estimate_coding_score(parsed_data),
             "communication_score": estimate_communication_score(parsed_data),
             "leadership_score": estimate_leadership_score(parsed_data),
@@ -83,7 +85,9 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
             "projects_count": features["projects_count"],
             "coding_skill_score": features["coding_score"],
             "communication_skill_score": features["communication_score"],
-            "leadership_score": features["leadership_score"]
+            "leadership_score": features["leadership_score"],
+            "college_tier": features["college_tier"],
+            "branch": features["branch"]
         }])
 
         prob = 0
@@ -188,6 +192,8 @@ class DemoRequest(BaseModel):
     internships_count: int
     certifications_count: int
     skills_list: list[str]
+    college_tier: str
+    branch: str
     coding_score: Optional[int] = None
     communication_score: Optional[int] = None
     leadership_score: Optional[int] = None
@@ -209,7 +215,9 @@ async def demo_endpoint(request: DemoRequest):
         "projects_count": features["projects_count"],
         "coding_skill_score": features["coding_score"],
         "communication_skill_score": features["communication_score"],
-        "leadership_score": features["leadership_score"]
+        "leadership_score": features["leadership_score"],
+        "college_tier": features["college_tier"],
+        "branch": features["branch"]
     }])
 
     prob = 0

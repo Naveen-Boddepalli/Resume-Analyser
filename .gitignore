@@ -64,3 +64,4 @@ venv.bak/
 # Project specific (Optional: adjust if you need to check in certain models/data)
 # data/
 # models/*.pkl
+catboost_info/

@@ -38,7 +38,9 @@ def llm_extract_features(text: str) -> dict:
       "projects_count": <int, total number of distinct projects, default 0>,
       "internships_count": <int, total number of distinct internships/work experiences, default 0>,
       "certifications_count": <int, total number of distinct certifications, default 0>,
-      "skills_list": [<list of strings, exact technical skills found (e.g. "python", "react", "aws")>]
+      "skills_list": [<list of strings, exact technical skills found (e.g. "python", "react", "aws")>],
+      "college_tier": <string, one of: "Tier 1", "Tier 2", "Tier 3" based on the university prestige. Default "Tier 2">,
+      "branch": <string, degree major abbreviation e.g., "CSE", "IT", "ECE", "EEE", "Mechanical". Default "CSE">
     }}
     
     Resume Text:
@@ -70,6 +72,8 @@ def llm_extract_features(text: str) -> dict:
             "internships_count": int(data.get("internships_count", 0)),
             "certifications_count": int(data.get("certifications_count", 0)),
             "skills_list": [str(s).lower() for s in data.get("skills_list", [])],
+            "college_tier": str(data.get("college_tier", "Tier 2")),
+            "branch": str(data.get("branch", "CSE")).upper(),
             "raw_text": text
         }
     except Exception as e:
@@ -101,6 +105,8 @@ def extract_features_fallback(text: str) -> dict:
         "internships_count": internships_count,
         "certifications_count": certifications_count,
         "skills_list": skills_list,
+        "college_tier": "Tier 2",
+        "branch": "CSE",
         "raw_text": text
     }
 

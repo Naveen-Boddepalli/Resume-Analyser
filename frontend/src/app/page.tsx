@@ -107,7 +107,9 @@ export default function Home() {
           projects_count: 3,
           internships_count: 1,
           certifications_count: 2,
-          skills_list: ["React", "Python", "AWS"]
+          skills_list: ["React", "Python", "AWS"],
+          college_tier: "Tier 2",
+          branch: "CSE"
         })
       });
       
@@ -132,6 +134,8 @@ export default function Home() {
         internships_count: 1,
         certifications_count: 2,
         skills_list: ["React", "Python"],
+        college_tier: "Tier 2",
+        branch: "CSE",
         coding_score: 75,
         placement_probability: 85,
         salary_low: 9.5,

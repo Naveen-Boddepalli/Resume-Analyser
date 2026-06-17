@@ -7,6 +7,8 @@ export interface FeatureSet {
   internships_count: number;
   certifications_count: number;
   skills_list: string[];
+  college_tier?: string;
+  branch?: string;
   coding_score?: number;
   communication_score?: number;
   leadership_score?: number;
@@ -26,7 +28,7 @@ export function WhatIfSliders({ initialFeatures, onRecalculate, isLoading }: Wha
     setFeatures(initialFeatures);
   }, [initialFeatures]);
 
-  const handleChange = (key: keyof FeatureSet, value: number) => {
+  const handleChange = (key: keyof FeatureSet, value: number | string) => {
     setFeatures(prev => ({ ...prev, [key]: value }));
   };
 
@@ -109,6 +111,35 @@ export function WhatIfSliders({ initialFeatures, onRecalculate, isLoading }: Wha
             onChange={(e) => handleChange("certifications_count", parseInt(e.target.value, 10))}
             className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
           />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">College Tier</label>
+          <select
+            value={features.college_tier || "Tier 2"}
+            onChange={(e) => handleChange("college_tier", e.target.value)}
+            className="w-full p-2 bg-background border rounded-lg text-sm"
+          >
+            <option value="Tier 1">Tier 1 (e.g. IIT, NIT, BITS)</option>
+            <option value="Tier 2">Tier 2</option>
+            <option value="Tier 3">Tier 3</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Degree Major</label>
+          <select
+            value={features.branch || "CSE"}
+            onChange={(e) => handleChange("branch", e.target.value)}
+            className="w-full p-2 bg-background border rounded-lg text-sm"
+          >
+            <option value="CSE">Computer Science (CSE)</option>
+            <option value="IT">Information Technology (IT)</option>
+            <option value="ECE">Electronics (ECE)</option>
+            <option value="EEE">Electrical (EEE)</option>
+            <option value="MECH">Mechanical</option>
+            <option value="CIVIL">Civil</option>
+          </select>
         </div>
 
         <button
