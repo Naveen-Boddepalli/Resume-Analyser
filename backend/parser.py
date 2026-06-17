@@ -1,6 +1,9 @@
 import fitz  # PyMuPDF
 from docx import Document
 import re
+import json
+import requests
+from config import GROQ_API_KEY, GROQ_API_URL
 
 def parse_pdf(file_path: str) -> dict:
     doc = fitz.open(file_path)
@@ -9,14 +12,14 @@ def parse_pdf(file_path: str) -> dict:
          blocks = page.get_text("blocks")
          for block in blocks:
              text += block[4] + "\n"
-    return extract_features(text)
+    return llm_extract_features(text)
 
 def parse_docx(file_path: str) -> dict:
     doc = Document(file_path)
     text = "\n".join([para.text for para in doc.paragraphs])
-    return extract_features(text)
+    return llm_extract_features(text)
 
-def extract_features(text: str) -> dict:
+def llm_extract_features(text: str) -> dict:
     text_lower = text.lower()
     
     # Resume Validation Check
@@ -25,6 +28,56 @@ def extract_features(text: str) -> dict:
     
     if keyword_matches < 2:
         raise ValueError("Invalid resume format: The uploaded document does not appear to be a valid resume.")
+
+    prompt = f"""
+    You are an expert resume parser. Extract the following information from the resume text below and return it strictly as a valid JSON object.
+    
+    Required JSON structure:
+    {{
+      "cgpa": <float, out of 10.0, default 0.0 if not found>,
+      "projects_count": <int, total number of distinct projects, default 0>,
+      "internships_count": <int, total number of distinct internships/work experiences, default 0>,
+      "certifications_count": <int, total number of distinct certifications, default 0>,
+      "skills_list": [<list of strings, exact technical skills found (e.g. "python", "react", "aws")>]
+    }}
+    
+    Resume Text:
+    {text[:4000]}
+    """
+
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "llama-3.1-8b-instant",
+        "messages": [
+            {"role": "system", "content": "You are a robust JSON extraction API. You must return ONLY raw JSON matching the requested structure. No markdown, no explanations."},
+            {"role": "user", "content": prompt}
+        ],
+        "response_format": {"type": "json_object"}
+    }
+    
+    try:
+        response = requests.post(GROQ_API_URL, json=payload, headers=headers)
+        response.raise_for_status()
+        data = json.loads(response.json()['choices'][0]['message']['content'])
+        
+        return {
+            "cgpa": float(data.get("cgpa", 0.0)),
+            "projects_count": int(data.get("projects_count", 0)),
+            "internships_count": int(data.get("internships_count", 0)),
+            "certifications_count": int(data.get("certifications_count", 0)),
+            "skills_list": [str(s).lower() for s in data.get("skills_list", [])],
+            "raw_text": text
+        }
+    except Exception as e:
+        print(f"LLM Parsing failed, falling back to regex: {e}")
+        return extract_features_fallback(text)
+
+def extract_features_fallback(text: str) -> dict:
+    text_lower = text.lower()
     
     # Very basic dummy extraction logic
     cgpa = 0.0
@@ -35,7 +88,7 @@ def extract_features(text: str) -> dict:
         except:
             pass
             
-    projects_count = text_lower.count('project') // 2  # arbitrary logic for demo
+    projects_count = text_lower.count('project') // 2
     internships_count = text_lower.count('internship') // 2
     certifications_count = text_lower.count('certification') // 2
     
@@ -60,4 +113,4 @@ def parse_resume(file_path: str) -> dict:
         # Fallback text parsing if needed
         with open(file_path, 'r', encoding='utf-8') as f:
             text = f.read()
-        return extract_features(text)
+        return llm_extract_features(text)

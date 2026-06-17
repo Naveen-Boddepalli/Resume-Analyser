@@ -1,8 +1,7 @@
 import json
 import requests
 
-GROQ_API_KEY = "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"
-GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+from config import GROQ_API_KEY, GROQ_API_URL
 
 def generate_recommendations(features: dict, shap_results: dict) -> dict:
     prompt = f"""

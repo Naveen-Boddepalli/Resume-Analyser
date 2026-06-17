@@ -13,6 +13,7 @@ from parser import parse_resume
 from feature_mapper import estimate_coding_score, estimate_communication_score, estimate_leadership_score
 from explainer import get_shap_values
 from llm import generate_recommendations
+from config import SUPABASE_URL, SUPABASE_KEY
 
 app = FastAPI(title="AI Placement Readiness Platform API")
 
@@ -24,8 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-SUPABASE_URL = "https://eeuwkjqvunrqvyxawcwr.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVldXdranF2dW5ycXZ5eGF3Y3dyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTU4MzMzNiwiZXhwIjoyMDk3MTU5MzM2fQ.xOhfCedmipORRODI89SopWIngax-xPvZzcVT1VmybfQ"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Load Models
