@@ -3,7 +3,8 @@ from docx import Document
 import re
 import json
 import requests
-from config import GROQ_API_KEY, GROQ_API_URL
+import time
+from config import MISTRAL_API_KEY, MISTRAL_API_URL
 
 def parse_pdf(file_path: str) -> dict:
     doc = fitz.open(file_path)
@@ -48,12 +49,12 @@ def llm_extract_features(text: str) -> dict:
     """
 
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
         "Content-Type": "application/json"
     }
     
     payload = {
-        "model": "llama-3.1-8b-instant",
+        "model": "mistral-small-latest",
         "messages": [
             {"role": "system", "content": "You are a robust JSON extraction API. You must return ONLY raw JSON matching the requested structure. No markdown, no explanations."},
             {"role": "user", "content": prompt}
@@ -62,20 +63,26 @@ def llm_extract_features(text: str) -> dict:
     }
     
     try:
-        response = requests.post(GROQ_API_URL, json=payload, headers=headers)
-        response.raise_for_status()
-        data = json.loads(response.json()['choices'][0]['message']['content'])
-        
-        return {
-            "cgpa": float(data.get("cgpa", 0.0)),
-            "projects_count": int(data.get("projects_count", 0)),
-            "internships_count": int(data.get("internships_count", 0)),
-            "certifications_count": int(data.get("certifications_count", 0)),
-            "skills_list": [str(s).lower() for s in data.get("skills_list", [])],
-            "college_tier": str(data.get("college_tier", "Tier 2")),
-            "branch": str(data.get("branch", "CSE")).upper(),
-            "raw_text": text
-        }
+        max_retries = 3
+        for attempt in range(max_retries):
+            response = requests.post(MISTRAL_API_URL, json=payload, headers=headers)
+            if response.status_code == 429 and attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+                continue
+            response.raise_for_status()
+            data = json.loads(response.json()['choices'][0]['message']['content'])
+            
+            return {
+                "cgpa": float(data.get("cgpa", 0.0)),
+                "projects_count": int(data.get("projects_count", 0)),
+                "internships_count": int(data.get("internships_count", 0)),
+                "certifications_count": int(data.get("certifications_count", 0)),
+                "skills_list": [str(s).lower() for s in data.get("skills_list", [])],
+                "college_tier": str(data.get("college_tier", "Tier 2")),
+                "branch": str(data.get("branch", "CSE")).upper(),
+                "raw_text": text
+            }
+        raise Exception("Max retries exceeded for LLM parsing")
     except Exception as e:
         print(f"LLM Parsing failed, falling back to regex: {e}")
         return extract_features_fallback(text)

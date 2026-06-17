@@ -1,7 +1,8 @@
 import json
 import requests
+import time
 
-from config import GROQ_API_KEY, GROQ_API_URL
+from config import MISTRAL_API_KEY, MISTRAL_API_URL
 
 def generate_recommendations(features: dict, shap_results: dict) -> dict:
     prompt = f"""
@@ -13,12 +14,12 @@ def generate_recommendations(features: dict, shap_results: dict) -> dict:
     """
     
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {MISTRAL_API_KEY}",
         "Content-Type": "application/json"
     }
     
     payload = {
-        "model": "llama-3.1-8b-instant",
+        "model": "mistral-small-latest",
         "messages": [
             {"role": "system", "content": "You are an expert career advisor and technical recruiter. Output only a valid JSON object."},
             {"role": "user", "content": prompt}
@@ -27,8 +28,15 @@ def generate_recommendations(features: dict, shap_results: dict) -> dict:
     }
     
     try:
-        response = requests.post(GROQ_API_URL, json=payload, headers=headers)
-        response.raise_for_status()
-        return response.json()['choices'][0]['message']['content']
+        # Add retry logic for rate limits
+        max_retries = 3
+        for attempt in range(max_retries):
+            response = requests.post(MISTRAL_API_URL, json=payload, headers=headers)
+            if response.status_code == 429 and attempt < max_retries - 1:
+                time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s...
+                continue
+            response.raise_for_status()
+            return response.json()['choices'][0]['message']['content']
     except Exception as e:
+        print(f"LLM Recommendation failed: {e}")
         return '{"recommendations": ["Improve coding skills by practicing on LeetCode", "Build more full-stack projects", "Apply for internships to gain industry experience", "Practice mock interviews to improve communication"]}'
