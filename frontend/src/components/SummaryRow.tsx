@@ -9,9 +9,9 @@ interface SummaryRowProps {
 export function SummaryRow({ probability, salaryRange }: SummaryRowProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto">
-      <div className="bg-card border border-border rounded-xl p-6 flex items-center shadow-sm hover:shadow-md transition-shadow">
-        <div className="bg-green-100 p-4 rounded-full mr-5">
-          <Target className="w-8 h-8 text-green-600" />
+      <div className="bg-card border border-border rounded-xl p-6 flex items-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
+        <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full mr-5">
+          <Target className="w-8 h-8 text-green-600 dark:text-green-400" />
         </div>
         <div>
           <p className="text-sm font-medium text-muted-foreground">
@@ -21,8 +21,8 @@ export function SummaryRow({ probability, salaryRange }: SummaryRowProps) {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6 flex items-center shadow-sm hover:shadow-md transition-shadow">
-        <div className="bg-blue-100 p-4 rounded-full mr-5">
+      <div className="bg-card border border-border rounded-xl p-6 flex items-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
+        <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mr-5">
           <DollarSign className="w-8 h-8 text-blue-600" />
         </div>
         <div>

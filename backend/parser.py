@@ -19,6 +19,13 @@ def parse_docx(file_path: str) -> dict:
 def extract_features(text: str) -> dict:
     text_lower = text.lower()
     
+    # Resume Validation Check
+    resume_keywords = ['education', 'experience', 'skills', 'project', 'internship', 'resume', 'profile', 'cgpa', 'university', 'college', 'degree']
+    keyword_matches = sum(1 for kw in resume_keywords if kw in text_lower)
+    
+    if keyword_matches < 2:
+        raise ValueError("Invalid resume format: The uploaded document does not appear to be a valid resume.")
+    
     # Very basic dummy extraction logic
     cgpa = 0.0
     cgpa_match = re.search(r'cgpa[:\s]*([0-9]+\.[0-9]+)', text_lower)

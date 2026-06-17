@@ -41,10 +41,10 @@ export function UploadCard({ onUpload, isLoading = false }: UploadCardProps) {
 
   return (
     <div
-      className={`relative w-full max-w-xl mx-auto rounded-xl border-2 border-dashed p-10 transition-all duration-200 ${
+      className={`relative w-full max-w-xl mx-auto rounded-xl border-2 border-dashed p-10 transition-all duration-300 ${
         isDragging
-          ? "border-primary bg-primary/5"
-          : "border-border bg-card hover:border-primary/50"
+          ? "border-primary bg-primary/5 scale-[1.02] shadow-md"
+          : "border-border bg-card hover:border-primary/50 hover:scale-[1.02] hover:shadow-lg hover:bg-muted/30"
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

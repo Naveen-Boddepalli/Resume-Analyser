@@ -189,13 +189,20 @@ class DemoRequest(BaseModel):
     internships_count: int
     certifications_count: int
     skills_list: list[str]
+    coding_score: Optional[int] = None
+    communication_score: Optional[int] = None
+    leadership_score: Optional[int] = None
 
 @app.post("/demo")
 async def demo_endpoint(request: DemoRequest):
     features = request.model_dump()
-    features['coding_score'] = estimate_coding_score(features)
-    features['communication_score'] = estimate_communication_score(features)
-    features['leadership_score'] = estimate_leadership_score(features)
+    
+    if features.get('coding_score') is None:
+        features['coding_score'] = estimate_coding_score(features)
+    if features.get('communication_score') is None:
+        features['communication_score'] = estimate_communication_score(features)
+    if features.get('leadership_score') is None:
+        features['leadership_score'] = estimate_leadership_score(features)
     
     X_df = pd.DataFrame([{
         "cgpa": features["cgpa"],

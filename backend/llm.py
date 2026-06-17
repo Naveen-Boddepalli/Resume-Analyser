@@ -19,7 +19,7 @@ def generate_recommendations(features: dict, shap_results: dict) -> dict:
     }
     
     payload = {
-        "model": "llama3-8b-8192",
+        "model": "llama-3.1-8b-instant",
         "messages": [
             {"role": "system", "content": "You are an expert career advisor and technical recruiter. Output only a valid JSON object."},
             {"role": "user", "content": prompt}

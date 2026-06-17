@@ -19,8 +19,8 @@ export function ShapPanel({ features }: ShapPanelProps) {
   return (
     <div className="grid md:grid-cols-2 gap-6 w-full max-w-5xl mx-auto">
       {/* Strengths Card */}
-      <div className="bg-card border border-green-500/20 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
+      <div className="bg-card border border-green-500/20 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-green-500 group-hover:h-1.5 transition-all" />
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-green-500/10 rounded-lg">
             <TrendingUp className="w-5 h-5 text-green-600" />
@@ -49,8 +49,8 @@ export function ShapPanel({ features }: ShapPanelProps) {
       </div>
 
       {/* Weaknesses Card */}
-      <div className="bg-card border border-red-500/20 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
+      <div className="bg-card border border-red-500/20 rounded-2xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-red-500 group-hover:h-1.5 transition-all" />
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-red-500/10 rounded-lg">
             <TrendingDown className="w-5 h-5 text-red-600" />
