@@ -79,7 +79,7 @@ export function SensitivityPanel({ currentFeatures, baseProbability }: Sensitivi
   const maxChange = Math.max(...data.map((d) => Math.abs(d.probability_change)), 1);
 
   return (
-    <div className="bg-card border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+    <div className="bg-card border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group h-full flex flex-col">
       {/* Green accent top border */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-emerald-500 group-hover:h-1.5 transition-all" />
 
@@ -99,7 +99,7 @@ export function SensitivityPanel({ currentFeatures, baseProbability }: Sensitivi
       </div>
 
       {/* Content */}
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 flex-1 overflow-y-auto" style={{ maxHeight: '600px' }}>
         {loading ? (
           /* Skeleton loading state */
           <div className="space-y-3 pt-4">

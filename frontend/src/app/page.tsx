@@ -309,7 +309,8 @@ export default function Home() {
         {results && currentFeatures && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Left Column: Sliders */}
-            <div className="lg:col-span-1 space-y-6">
+            <div className="lg:col-span-1">
+              <div className="sticky top-6 space-y-6">
               <WhatIfSliders 
                 initialFeatures={currentFeatures} 
                 onRecalculate={handleRecalculate} 
@@ -342,16 +343,18 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
 
             {/* Right Column: Report */}
-            <div className="lg:col-span-2 space-y-10" ref={reportRef}>
-              <div id="pdf-action-buttons" className="flex justify-end">
+            <div className="lg:col-span-2 flex flex-col gap-8" ref={reportRef}>
+              <div id="pdf-action-buttons" className="flex justify-between items-center bg-card p-4 rounded-2xl border shadow-sm">
+                <h3 className="font-bold text-lg">Analysis Report</h3>
                 <button
                   onClick={handleExportPDF}
-                  className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg font-medium hover:bg-secondary/80 transition-colors text-sm"
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm"
                 >
                   <Download className="w-4 h-4" />
-                  Download PDF Report
+                  Download PDF
                 </button>
               </div>
 
@@ -368,12 +371,18 @@ export default function Home() {
                 finalValue={results.probability / 100}
               />
 
-              <SensitivityPanel
-                currentFeatures={currentFeatures}
-                baseProbability={results.probability}
-              />
-              
-              <RecommendationsPanel recommendations={results.recommendations} />
+              {/* Bento Box: Side-by-side panels */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="h-full">
+                  <SensitivityPanel
+                    currentFeatures={currentFeatures}
+                    baseProbability={results.probability}
+                  />
+                </div>
+                <div className="h-full">
+                  <RecommendationsPanel recommendations={results.recommendations} />
+                </div>
+              </div>
             </div>
           </div>
         )}

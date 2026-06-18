@@ -8,11 +8,12 @@ export function RecommendationsPanel({
   recommendations,
 }: RecommendationsPanelProps) {
   return (
-    <div className="bg-card border border-border rounded-xl p-6 w-full max-w-4xl mx-auto shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-card border border-border rounded-2xl p-6 w-full h-full flex flex-col shadow-sm hover:shadow-md transition-shadow">
       <h3 className="text-xl font-bold mb-6 text-foreground">
         AI Recommendations
       </h3>
-      <ul className="space-y-4">
+      <div className="flex-1 overflow-y-auto pr-2" style={{ maxHeight: '600px' }}>
+        <ul className="space-y-4">
         {recommendations.map((rec, index) => (
           <li
             key={index}
@@ -24,7 +25,8 @@ export function RecommendationsPanel({
             <p className="text-foreground leading-relaxed pt-1">{rec}</p>
           </li>
         ))}
-      </ul>
+        </ul>
+      </div>
     </div>
   );
 }
