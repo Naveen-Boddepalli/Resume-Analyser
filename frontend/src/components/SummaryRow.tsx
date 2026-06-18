@@ -1,36 +1,37 @@
 import React from "react";
-import { Target, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
+import { PlacementGauge } from "./PlacementGauge";
+import { SalaryContext } from "./SalaryContext";
 
 interface SummaryRowProps {
   probability: number;
   salaryRange: string;
+  salaryLow: number;
+  salaryHigh: number;
 }
 
-export function SummaryRow({ probability, salaryRange }: SummaryRowProps) {
+export function SummaryRow({ probability, salaryRange, salaryLow, salaryHigh }: SummaryRowProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto">
-      <div className="bg-card border border-border rounded-xl p-6 flex items-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
-        <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full mr-5">
-          <Target className="w-8 h-8 text-green-600 dark:text-green-400" />
-        </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">
-            Placement Probability
-          </p>
-          <p className="text-3xl font-bold text-foreground">{probability}%</p>
-        </div>
+      {/* Placement Probability — Radial Gauge */}
+      <div className="bg-card border border-border rounded-xl p-6 flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
+        <PlacementGauge value={probability} />
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6 flex items-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
-        <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mr-5">
-          <DollarSign className="w-8 h-8 text-blue-600" />
+      {/* Estimated Salary Range + Percentile Context */}
+      <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
+        <div className="flex items-center mb-5">
+          <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mr-5">
+            <DollarSign className="w-8 h-8 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">
+              Estimated Salary Range
+            </p>
+            <p className="text-3xl font-bold text-foreground">{salaryRange}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">
-            Estimated Salary Range
-          </p>
-          <p className="text-3xl font-bold text-foreground">{salaryRange}</p>
-        </div>
+        <SalaryContext salaryLow={salaryLow} salaryHigh={salaryHigh} />
       </div>
     </div>
   );

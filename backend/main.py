@@ -1,7 +1,9 @@
 import os
 import uuid
 import json
+import copy
 import joblib
+import numpy as np
 import pandas as pd
 from typing import Optional
 from fastapi import FastAPI, File, UploadFile, BackgroundTasks, HTTPException
@@ -36,6 +38,31 @@ try:
 except Exception as e:
     print("Warning: Could not load models", e)
     placement_model, salary_low_model, salary_high_model = None, None, None
+
+# Load salary distribution statistics from training data (computed once at startup)
+_salary_dist_cache: dict | None = None
+try:
+    _data_path = os.path.join(os.path.dirname(__file__), '../data/student_placement_prediction_dataset_2026.csv')
+    _train_df = pd.read_csv(_data_path)
+    _placed = _train_df[_train_df['placement_status'] == 'Placed']
+    _salaries = _placed['salary_package_lpa'].dropna()
+    _salary_dist_cache = {
+        "placement_rate": round(len(_placed) / len(_train_df) * 100, 1),
+        "salary_stats": {
+            "p10": round(float(np.percentile(_salaries, 10)), 1),
+            "p25": round(float(np.percentile(_salaries, 25)), 1),
+            "p50": round(float(np.percentile(_salaries, 50)), 1),
+            "p75": round(float(np.percentile(_salaries, 75)), 1),
+            "p90": round(float(np.percentile(_salaries, 90)), 1),
+            "min": round(float(_salaries.min()), 1),
+            "max": round(float(_salaries.max()), 1),
+            "mean": round(float(_salaries.mean()), 1),
+        }
+    }
+    del _train_df, _placed, _salaries
+except Exception as e:
+    print("Warning: Could not load salary distribution data", e)
+    _salary_dist_cache = None
 
 def update_job_status(job_id: str, status: str, result: Optional[dict] = None):
     try:
@@ -244,4 +271,85 @@ async def demo_endpoint(request: DemoRequest):
         "features": features,
         "analysis": shap_results,
         "recommendations": recommendations
+    }
+
+
+@app.get("/salary-distribution")
+async def salary_distribution():
+    if _salary_dist_cache is None:
+        raise HTTPException(status_code=500, detail="Salary distribution data not available. Training CSV not found.")
+    return _salary_dist_cache
+
+
+@app.post("/sensitivity")
+async def sensitivity_analysis(request: DemoRequest):
+    features = request.model_dump()
+
+    if features.get('coding_score') is None:
+        features['coding_score'] = estimate_coding_score(features)
+    if features.get('communication_score') is None:
+        features['communication_score'] = estimate_communication_score(features)
+    if features.get('leadership_score') is None:
+        features['leadership_score'] = estimate_leadership_score(features)
+
+    def _build_x_df(f: dict) -> pd.DataFrame:
+        return pd.DataFrame([{
+            "cgpa": f["cgpa"],
+            "internships_count": f["internships_count"],
+            "projects_count": f["projects_count"],
+            "coding_skill_score": f["coding_score"],
+            "communication_skill_score": f["communication_score"],
+            "leadership_score": f["leadership_score"],
+            "college_tier": f["college_tier"],
+            "branch": f["branch"]
+        }])
+
+    X_base = _build_x_df(features)
+
+    base_prob = 0
+    if placement_model is not None:
+        base_prob = int(placement_model.predict_proba(X_base)[0][1] * 100)
+
+    # Perturbation definitions: (feature_key, display_name, delta, cap)
+    perturbations = [
+        ("cgpa", "CGPA", 0.5, 10.0),
+        ("internships_count", "Internships", 1, 10),
+        ("projects_count", "Projects", 1, 20),
+        ("coding_score", "Coding Skills", 10, 100),
+        ("communication_score", "Communication", 10, 100),
+        ("leadership_score", "Leadership", 10, 100),
+    ]
+
+    sensitivities = []
+    for feat_key, display_name, delta, cap in perturbations:
+        current_val = features[feat_key]
+        # Skip if already at cap
+        if current_val >= cap:
+            continue
+
+        new_val = min(current_val + delta, cap)
+        perturbed = copy.deepcopy(features)
+        perturbed[feat_key] = new_val
+
+        X_pert = _build_x_df(perturbed)
+
+        new_prob = 0
+        if placement_model is not None:
+            new_prob = int(placement_model.predict_proba(X_pert)[0][1] * 100)
+
+        prob_change = round(new_prob - base_prob, 1)
+        sensitivities.append({
+            "feature": display_name,
+            "current_value": current_val,
+            "new_value": new_val,
+            "delta_label": f"+{delta}",
+            "probability_change": prob_change
+        })
+
+    # Sort by probability_change descending (highest improvement first)
+    sensitivities.sort(key=lambda x: x["probability_change"], reverse=True)
+
+    return {
+        "base_probability": base_prob,
+        "sensitivities": sensitivities
     }

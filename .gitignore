@@ -19,6 +19,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.tsbuildinfo
 
 # Python / FastAPI / ML (Backend & ML)
 __pycache__/
@@ -42,6 +43,13 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Databases
+*.db
+*.sqlite3
+
+# Local test scratch scripts
+test_*.py
 
 # Python Virtual Environments
 .env/

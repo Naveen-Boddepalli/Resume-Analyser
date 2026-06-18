@@ -5,6 +5,7 @@ import { UploadCard } from "@/components/UploadCard";
 import { SummaryRow } from "@/components/SummaryRow";
 import { ShapPanel, ShapFeature } from "@/components/ShapPanel";
 import { RecommendationsPanel } from "@/components/RecommendationsPanel";
+import { SensitivityPanel } from "@/components/SensitivityPanel";
 import { Play, CheckCircle, Download, BookOpen } from "lucide-react";
 import { WhatIfSliders, FeatureSet } from "@/components/WhatIfSliders";
 import { AssessmentModal, AssessmentType } from "@/components/AssessmentModal";
@@ -24,7 +25,10 @@ export default function Home() {
   const [results, setResults] = useState<{
     probability: number;
     salaryRange: string;
+    salaryLow: number;
+    salaryHigh: number;
     shapFeatures: ShapFeature[];
+    baseValue: number;
     recommendations: string[];
   } | null>(null);
 
@@ -61,18 +65,21 @@ export default function Home() {
             
             const backendRes = statusData.result;
             const features = backendRes.features || {};
-            const analysis = backendRes.analysis || { strengths: [], weaknesses: [] };
+            const analysis = backendRes.analysis || { strengths: [], weaknesses: [], waterfall: [], base_value: 0.5 };
             
-            const shapFeatures = [
-              ...(analysis.strengths || []),
-              ...(analysis.weaknesses || [])
-            ];
+            // Prefer waterfall data if available, otherwise fall back to strengths+weaknesses
+            const shapFeatures: ShapFeature[] = analysis.waterfall && analysis.waterfall.length > 0
+              ? analysis.waterfall
+              : [...(analysis.strengths || []), ...(analysis.weaknesses || [])];
 
             setCurrentFeatures(features);
             setResults({
               probability: features.placement_probability || 0,
               salaryRange: `${features.salary_low || 0} LPA - ${features.salary_high || 0} LPA`,
+              salaryLow: features.salary_low || 0,
+              salaryHigh: features.salary_high || 0,
               shapFeatures: shapFeatures,
+              baseValue: analysis.base_value ?? 0.5,
               recommendations: backendRes.recommendations || []
             });
             setIsLoading(false);
@@ -118,11 +125,18 @@ export default function Home() {
       }
       
       const data = await response.json();
+      const analysis = data.analysis || { strengths: [], weaknesses: [], waterfall: [], base_value: 0.5 };
+      const shapFeatures: ShapFeature[] = analysis.waterfall && analysis.waterfall.length > 0
+        ? analysis.waterfall
+        : [...(analysis.strengths || []), ...(analysis.weaknesses || [])];
       setCurrentFeatures(data.features);
       setResults({
         probability: data.features.placement_probability || 0,
         salaryRange: `${data.features.salary_low || 0} LPA - ${data.features.salary_high || 0} LPA`,
-        shapFeatures: [...(data.analysis.strengths || []), ...(data.analysis.weaknesses || [])],
+        salaryLow: data.features.salary_low || 0,
+        salaryHigh: data.features.salary_high || 0,
+        shapFeatures: shapFeatures,
+        baseValue: analysis.base_value ?? 0.5,
         recommendations: data.recommendations || []
       });
     } catch (error) {
@@ -145,10 +159,13 @@ export default function Home() {
       setResults({
         probability: 85,
         salaryRange: "9.5 LPA - 12.0 LPA",
+        salaryLow: 9.5,
+        salaryHigh: 12.0,
         shapFeatures: [
-          { name: "React Experience", impact: 0.8 },
-          { name: "Missing Python Skills", impact: -0.6 },
+          { name: "React Experience", impact: 0.8, value: "Yes" },
+          { name: "Missing Python Skills", impact: -0.6, value: "No" },
         ],
+        baseValue: 0.5,
         recommendations: ["Learn Python"],
       });
     }
@@ -175,16 +192,18 @@ export default function Home() {
       const data = await response.json();
       
       setCurrentFeatures(data.features);
-      const analysis = data.analysis || { strengths: [], weaknesses: [] };
-      const shapFeatures = [
-        ...(analysis.strengths || []),
-        ...(analysis.weaknesses || [])
-      ];
+      const analysis = data.analysis || { strengths: [], weaknesses: [], waterfall: [], base_value: 0.5 };
+      const shapFeatures: ShapFeature[] = analysis.waterfall && analysis.waterfall.length > 0
+        ? analysis.waterfall
+        : [...(analysis.strengths || []), ...(analysis.weaknesses || [])];
       
       setResults({
         probability: data.features.placement_probability || 0,
         salaryRange: `${data.features.salary_low || 0} LPA - ${data.features.salary_high || 0} LPA`,
+        salaryLow: data.features.salary_low || 0,
+        salaryHigh: data.features.salary_high || 0,
         shapFeatures: shapFeatures,
+        baseValue: analysis.base_value ?? 0.5,
         recommendations: data.recommendations || []
       });
     } catch (error) {
@@ -339,9 +358,20 @@ export default function Home() {
               <SummaryRow
                 probability={results.probability}
                 salaryRange={results.salaryRange}
+                salaryLow={results.salaryLow}
+                salaryHigh={results.salaryHigh}
               />
               
-              <ShapPanel features={results.shapFeatures} />
+              <ShapPanel
+                features={results.shapFeatures}
+                baseValue={results.baseValue}
+                finalValue={results.probability / 100}
+              />
+
+              <SensitivityPanel
+                currentFeatures={currentFeatures}
+                baseProbability={results.probability}
+              />
               
               <RecommendationsPanel recommendations={results.recommendations} />
             </div>
