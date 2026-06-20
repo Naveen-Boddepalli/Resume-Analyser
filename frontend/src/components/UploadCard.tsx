@@ -6,9 +6,10 @@ import { UploadCloud, CheckCircle, Loader2 } from "lucide-react";
 interface UploadCardProps {
   onUpload: (file: File) => void;
   isLoading?: boolean;
+  title?: string;
 }
 
-export function UploadCard({ onUpload, isLoading = false }: UploadCardProps) {
+export function UploadCard({ onUpload, isLoading = false, title }: UploadCardProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -40,16 +41,18 @@ export function UploadCard({ onUpload, isLoading = false }: UploadCardProps) {
   };
 
   return (
-    <div
-      className={`relative w-full max-w-xl mx-auto rounded-xl border-2 border-dashed p-10 transition-all duration-300 ${
-        isDragging
-          ? "border-primary bg-primary/5 scale-[1.02] shadow-md"
-          : "border-border bg-card hover:border-primary/50 hover:scale-[1.02] hover:shadow-lg hover:bg-muted/30"
-      }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
+    <div className="w-full flex flex-col items-center">
+      {title && <h3 className="text-lg font-bold text-foreground mb-3">{title}</h3>}
+      <div
+        className={`relative w-full max-w-xl mx-auto rounded-xl border-2 border-dashed p-10 transition-all duration-300 ${
+          isDragging
+            ? "border-primary bg-primary/5 scale-[1.02] shadow-md"
+            : "border-border bg-card hover:border-primary/50 hover:scale-[1.02] hover:shadow-lg hover:bg-muted/30"
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
       <div className="flex flex-col items-center justify-center text-center space-y-4">
         {isLoading ? (
           <Loader2 className="w-12 h-12 text-primary animate-spin" />
@@ -82,6 +85,7 @@ export function UploadCard({ onUpload, isLoading = false }: UploadCardProps) {
           </label>
         )}
       </div>
+    </div>
     </div>
   );
 }

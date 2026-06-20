@@ -103,7 +103,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
       {/* Chart */}
       <div className="relative">
         {/* Gridlines header */}
-        <div className="flex items-end mb-1 ml-[180px] mr-[72px] relative h-5">
+        <div className="flex items-end mb-1 ml-[120px] mr-[60px] relative h-5">
           {gridlines.map((pct) => (
             <div
               key={pct}
@@ -139,7 +139,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
                   <div
                     className="absolute top-0 w-px border-l border-dashed border-muted-foreground/30 z-10"
                     style={{
-                      left: `calc(180px + (100% - 180px - 72px) * ${Math.max(Math.min(connectorLeft, 100), 0)} / 100)`,
+                      left: `calc(120px + (100% - 120px - 60px) * ${Math.max(Math.min(connectorLeft, 100), 0)} / 100)`,
                       height: "100%",
                     }}
                   />
@@ -160,7 +160,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
                   }}
                 >
                   {/* Feature label */}
-                  <div className="w-[180px] flex-shrink-0 pr-3">
+                  <div className="w-[120px] flex-shrink-0 pr-2">
                     <div className="text-sm text-foreground truncate">
                       {row.label}
                       {!isFirst && !isLast && (
@@ -236,7 +236,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
                   </div>
 
                   {/* Cumulative total */}
-                  <div className="w-[68px] flex-shrink-0 text-right">
+                  <div className="w-[60px] flex-shrink-0 text-right">
                     <span
                       className={`text-xs font-semibold tabular-nums ${
                         isFirst || isLast
@@ -256,7 +256,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
                   <div
                     className="absolute z-20 bg-foreground text-background text-xs rounded-lg px-3 py-2 shadow-xl pointer-events-none"
                     style={{
-                      left: `calc(180px + (100% - 180px - 72px) * ${row.barStart + row.barWidth / 2} / 100)`,
+                      left: `calc(120px + (100% - 120px - 60px) * ${row.barStart + row.barWidth / 2} / 100)`,
                       top: "-8px",
                       transform: "translate(-50%, -100%)",
                     }}
@@ -291,7 +291,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
         </div>
 
         {/* Bottom axis */}
-        <div className="flex items-start mt-2 ml-[180px] mr-[72px] relative h-3 border-t border-border/60">
+        <div className="flex items-start mt-2 ml-[120px] mr-[60px] relative h-3 border-t border-border/60">
           {gridlines.map((pct) => (
             <div
               key={pct}

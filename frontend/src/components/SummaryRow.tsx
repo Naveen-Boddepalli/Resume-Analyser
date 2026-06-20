@@ -21,14 +21,16 @@ export function SummaryRow({ probability, salaryRange, salaryLow, salaryHigh }: 
       {/* Estimated Salary Range + Percentile Context */}
       <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
         <div className="flex items-center mb-5">
-          <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mr-5">
+          <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mr-5 shrink-0">
             <DollarSign className="w-8 h-8 text-blue-600" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-muted-foreground truncate">
               Estimated Salary Range
             </p>
-            <p className="text-3xl font-bold text-foreground">{salaryRange}</p>
+            <p className="text-xl lg:text-2xl font-bold text-foreground leading-tight">
+              {salaryRange}
+            </p>
           </div>
         </div>
         <SalaryContext salaryLow={salaryLow} salaryHigh={salaryHigh} />
