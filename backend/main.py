@@ -90,7 +90,7 @@ def get_job(job_id: str) -> Optional[dict]:
         response = supabase.table("jobs").select("*").eq("id", job_id).execute()
         if response.data:
             job = response.data[0]
-            return {"status": job["status"], "result": job.get("result")}
+            return {"status": job["status"], "result": job.get("result")}  # type: ignore
         return None
     except Exception as e:
         print(f"Failed to fetch job from Supabase: {e}")
@@ -199,7 +199,7 @@ async def upload_resume(
     # 2. Upload to Supabase Storage
     try:
         supabase.storage.from_("resumes").upload(
-            storage_path, content, file_options={"content-type": file.content_type}
+            storage_path, content, file_options={"content-type": file.content_type}  # type: ignore
         )
     except Exception as e:
         print(f"Failed to upload to Supabase storage: {e}")

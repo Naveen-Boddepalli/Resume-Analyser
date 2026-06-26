@@ -38,7 +38,7 @@ def generate_recommendations(features: dict, shap_results: dict) -> str:
         # Add retry logic for rate limits
         max_retries = 3
         for attempt in range(max_retries):
-            response = requests.post(MISTRAL_API_URL, json=payload, headers=headers)
+            response = requests.post(MISTRAL_API_URL, json=payload, headers=headers)  # type: ignore
             if response.status_code == 429 and attempt < max_retries - 1:
                 time.sleep(2**attempt)  # Exponential backoff: 1s, 2s...
                 continue
