@@ -5,14 +5,18 @@ import copy
 import joblib
 import numpy as np
 import pandas as pd
-from typing import Optional
+from typing import Optional, Any
 from fastapi import FastAPI, File, UploadFile, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
 
 from parser import parse_resume
-from feature_mapper import estimate_coding_score, estimate_communication_score, estimate_leadership_score
+from feature_mapper import (
+    estimate_coding_score,
+    estimate_communication_score,
+    estimate_leadership_score,
+)
 from explainer import get_shap_values
 from llm import generate_recommendations
 from config import SUPABASE_URL, SUPABASE_KEY
@@ -21,7 +25,10 @@ app = FastAPI(title="AI Placement Readiness Platform API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://resume-analyser-pink-rho.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,11 +37,11 @@ app.add_middleware(
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Load Models
-models_dir = os.path.join(os.path.dirname(__file__), '../models')
+models_dir = os.path.join(os.path.dirname(__file__), "../models")
 try:
-    placement_model = joblib.load(os.path.join(models_dir, 'placement_model.pkl'))
-    salary_low_model = joblib.load(os.path.join(models_dir, 'salary_low_model.pkl'))
-    salary_high_model = joblib.load(os.path.join(models_dir, 'salary_high_model.pkl'))
+    placement_model = joblib.load(os.path.join(models_dir, "placement_model.pkl"))
+    salary_low_model = joblib.load(os.path.join(models_dir, "salary_low_model.pkl"))
+    salary_high_model = joblib.load(os.path.join(models_dir, "salary_high_model.pkl"))
 except Exception as e:
     print("Warning: Could not load models", e)
     placement_model, salary_low_model, salary_high_model = None, None, None
@@ -42,10 +49,13 @@ except Exception as e:
 # Load salary distribution statistics from training data (computed once at startup)
 _salary_dist_cache: dict | None = None
 try:
-    _data_path = os.path.join(os.path.dirname(__file__), '../data/student_placement_prediction_dataset_2026.csv')
+    _data_path = os.path.join(
+        os.path.dirname(__file__),
+        "../data/student_placement_prediction_dataset_2026.csv",
+    )
     _train_df = pd.read_csv(_data_path)
-    _placed = _train_df[_train_df['placement_status'] == 'Placed']
-    _salaries = _placed['salary_package_lpa'].dropna()
+    _placed = _train_df[_train_df["placement_status"] == "Placed"]
+    _salaries = _placed["salary_package_lpa"].dropna()
     _salary_dist_cache = {
         "placement_rate": round(len(_placed) / len(_train_df) * 100, 1),
         "salary_stats": {
@@ -57,21 +67,23 @@ try:
             "min": round(float(_salaries.min()), 1),
             "max": round(float(_salaries.max()), 1),
             "mean": round(float(_salaries.mean()), 1),
-        }
+        },
     }
     del _train_df, _placed, _salaries
 except Exception as e:
     print("Warning: Could not load salary distribution data", e)
     _salary_dist_cache = None
 
+
 def update_job_status(job_id: str, status: str, result: Optional[dict] = None):
     try:
-        data = {"status": status}
+        data: dict[str, Any] = {"status": status}
         if result is not None:
             data["result"] = result
         supabase.table("jobs").update(data).eq("id", job_id).execute()
     except Exception as e:
         print(f"Failed to update job status in Supabase: {e}")
+
 
 def get_job(job_id: str) -> Optional[dict]:
     try:
@@ -84,13 +96,14 @@ def get_job(job_id: str) -> Optional[dict]:
         print(f"Failed to fetch job from Supabase: {e}")
         return None
 
+
 def process_resume(job_id: str, file_path: str, storage_path: str):
     try:
         update_job_status(job_id, "processing")
-        
+
         # 1. Parse resume
         parsed_data = parse_resume(file_path)
-        
+
         # 2. Map features
         features = {
             "cgpa": parsed_data.get("cgpa", 0.0),
@@ -104,18 +117,22 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
             "communication_score": estimate_communication_score(parsed_data),
             "leadership_score": estimate_leadership_score(parsed_data),
         }
-        
+
         # Format for model
-        X_df = pd.DataFrame([{
-            "cgpa": features["cgpa"],
-            "internships_count": features["internships_count"],
-            "projects_count": features["projects_count"],
-            "coding_skill_score": features["coding_score"],
-            "communication_skill_score": features["communication_score"],
-            "leadership_score": features["leadership_score"],
-            "college_tier": features["college_tier"],
-            "branch": features["branch"]
-        }])
+        X_df = pd.DataFrame(
+            [
+                {
+                    "cgpa": features["cgpa"],
+                    "internships_count": features["internships_count"],
+                    "projects_count": features["projects_count"],
+                    "coding_skill_score": features["coding_score"],
+                    "communication_skill_score": features["communication_score"],
+                    "leadership_score": features["leadership_score"],
+                    "college_tier": features["college_tier"],
+                    "branch": features["branch"],
+                }
+            ]
+        )
 
         prob = 0
         salary_low = 0
@@ -127,13 +144,13 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
             salary_low = round(salary_low_model.predict(X_df)[0], 1)
             salary_high = round(salary_high_model.predict(X_df)[0], 1)
 
-        features['placement_probability'] = prob
-        features['salary_low'] = salary_low
-        features['salary_high'] = salary_high
-        
+        features["placement_probability"] = prob
+        features["salary_low"] = salary_low
+        features["salary_high"] = salary_high
+
         # 3. Explain (SHAP equivalent)
         shap_results = get_shap_values(placement_model, X_df)
-        
+
         # 4. LLM Recommendations
         recommendations_str = generate_recommendations(features, shap_results)
         try:
@@ -141,16 +158,16 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
         except Exception as e:
             print(f"Error getting recommendations: {e}")
             roadmap = []
-        
+
         # Assemble response
         final_result = {
             "features": features,
             "analysis": shap_results,
-            "roadmap": roadmap
+            "roadmap": roadmap,
         }
-        
+
         update_job_status(job_id, "completed", final_result)
-        
+
     except Exception as e:
         update_job_status(job_id, "failed", {"error": str(e)})
     finally:
@@ -163,36 +180,46 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
         except Exception as e:
             print(f"Failed to delete {storage_path} from Supabase: {e}")
 
+
 @app.post("/upload")
-async def upload_resume(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def upload_resume(
+    background_tasks: BackgroundTasks, file: UploadFile = File(...)
+):
     job_id = str(uuid.uuid4())
-    
+
     file_path = f"temp_{job_id}_{file.filename}"
     storage_path = f"{job_id}/{file.filename}"
-    
+
     content = await file.read()
-    
+
     # 1. Save locally for parser
     with open(file_path, "wb") as buffer:
         buffer.write(content)
-        
+
     # 2. Upload to Supabase Storage
     try:
-        supabase.storage.from_("resumes").upload(storage_path, content, file_options={"content-type": file.content_type})
+        supabase.storage.from_("resumes").upload(
+            storage_path, content, file_options={"content-type": file.content_type}
+        )
     except Exception as e:
         print(f"Failed to upload to Supabase storage: {e}")
-        
+
     # 3. Create job in Supabase database
     try:
-        supabase.table("jobs").insert({"id": job_id, "status": "pending", "result": None}).execute()
+        supabase.table("jobs").insert(
+            {"id": job_id, "status": "pending", "result": None}
+        ).execute()
     except Exception as e:
         if os.path.exists(file_path):
             os.remove(file_path)
-        raise HTTPException(status_code=500, detail=f"Failed to insert job into DB: {str(e)}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Failed to insert job into DB: {str(e)}"
+        )
+
     background_tasks.add_task(process_resume, job_id, file_path, storage_path)
-    
+
     return {"job_id": job_id, "status": "pending"}
+
 
 @app.get("/result/{job_id}")
 async def get_result(job_id: str):
@@ -201,6 +228,7 @@ async def get_result(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     return job
 
+
 @app.get("/report/{job_id}")
 async def get_report(job_id: str):
     job = get_job(job_id)
@@ -208,12 +236,17 @@ async def get_report(job_id: str):
         raise HTTPException(status_code=404, detail="Job not found")
     if job["status"] != "completed":
         return {"status": job["status"], "message": "Report not ready yet"}
-    
+
     res = job["result"]
     return {
-        "readiness_summary": "Good" if res["features"].get("coding_score", 0) > 60 else "Needs Improvement",
-        "details": res
+        "readiness_summary": (
+            "Good"
+            if res["features"].get("coding_score", 0) > 60
+            else "Needs Improvement"
+        ),
+        "details": res,
     }
+
 
 class DemoRequest(BaseModel):
     cgpa: float
@@ -227,27 +260,32 @@ class DemoRequest(BaseModel):
     communication_score: Optional[int] = None
     leadership_score: Optional[int] = None
 
+
 @app.post("/demo")
 async def demo_endpoint(request: DemoRequest):
     features = request.model_dump()
-    
-    if features.get('coding_score') is None:
-        features['coding_score'] = estimate_coding_score(features)
-    if features.get('communication_score') is None:
-        features['communication_score'] = estimate_communication_score(features)
-    if features.get('leadership_score') is None:
-        features['leadership_score'] = estimate_leadership_score(features)
-    
-    X_df = pd.DataFrame([{
-        "cgpa": features["cgpa"],
-        "internships_count": features["internships_count"],
-        "projects_count": features["projects_count"],
-        "coding_skill_score": features["coding_score"],
-        "communication_skill_score": features["communication_score"],
-        "leadership_score": features["leadership_score"],
-        "college_tier": features["college_tier"],
-        "branch": features["branch"]
-    }])
+
+    if features.get("coding_score") is None:
+        features["coding_score"] = estimate_coding_score(features)
+    if features.get("communication_score") is None:
+        features["communication_score"] = estimate_communication_score(features)
+    if features.get("leadership_score") is None:
+        features["leadership_score"] = estimate_leadership_score(features)
+
+    X_df = pd.DataFrame(
+        [
+            {
+                "cgpa": features["cgpa"],
+                "internships_count": features["internships_count"],
+                "projects_count": features["projects_count"],
+                "coding_skill_score": features["coding_score"],
+                "communication_skill_score": features["communication_score"],
+                "leadership_score": features["leadership_score"],
+                "college_tier": features["college_tier"],
+                "branch": features["branch"],
+            }
+        ]
+    )
 
     prob = 0
     salary_low = 0
@@ -258,10 +296,10 @@ async def demo_endpoint(request: DemoRequest):
         salary_low = round(salary_low_model.predict(X_df)[0], 1)
         salary_high = round(salary_high_model.predict(X_df)[0], 1)
 
-    features['placement_probability'] = prob
-    features['salary_low'] = salary_low
-    features['salary_high'] = salary_high
-        
+    features["placement_probability"] = prob
+    features["salary_low"] = salary_low
+    features["salary_high"] = salary_high
+
     shap_results = get_shap_values(placement_model, X_df)
     recommendations_str = generate_recommendations(features, shap_results)
     try:
@@ -269,18 +307,17 @@ async def demo_endpoint(request: DemoRequest):
     except Exception as e:
         print(f"Error getting recommendations: {e}")
         roadmap = []
-        
-    return {
-        "features": features,
-        "analysis": shap_results,
-        "roadmap": roadmap
-    }
+
+    return {"features": features, "analysis": shap_results, "roadmap": roadmap}
 
 
 @app.get("/salary-distribution")
 async def salary_distribution():
     if _salary_dist_cache is None:
-        raise HTTPException(status_code=500, detail="Salary distribution data not available. Training CSV not found.")
+        raise HTTPException(
+            status_code=500,
+            detail="Salary distribution data not available. Training CSV not found.",
+        )
     return _salary_dist_cache
 
 
@@ -288,24 +325,28 @@ async def salary_distribution():
 async def sensitivity_analysis(request: DemoRequest):
     features = request.model_dump()
 
-    if features.get('coding_score') is None:
-        features['coding_score'] = estimate_coding_score(features)
-    if features.get('communication_score') is None:
-        features['communication_score'] = estimate_communication_score(features)
-    if features.get('leadership_score') is None:
-        features['leadership_score'] = estimate_leadership_score(features)
+    if features.get("coding_score") is None:
+        features["coding_score"] = estimate_coding_score(features)
+    if features.get("communication_score") is None:
+        features["communication_score"] = estimate_communication_score(features)
+    if features.get("leadership_score") is None:
+        features["leadership_score"] = estimate_leadership_score(features)
 
     def _build_x_df(f: dict) -> pd.DataFrame:
-        return pd.DataFrame([{
-            "cgpa": f["cgpa"],
-            "internships_count": f["internships_count"],
-            "projects_count": f["projects_count"],
-            "coding_skill_score": f["coding_score"],
-            "communication_skill_score": f["communication_score"],
-            "leadership_score": f["leadership_score"],
-            "college_tier": f["college_tier"],
-            "branch": f["branch"]
-        }])
+        return pd.DataFrame(
+            [
+                {
+                    "cgpa": f["cgpa"],
+                    "internships_count": f["internships_count"],
+                    "projects_count": f["projects_count"],
+                    "coding_skill_score": f["coding_score"],
+                    "communication_skill_score": f["communication_score"],
+                    "leadership_score": f["leadership_score"],
+                    "college_tier": f["college_tier"],
+                    "branch": f["branch"],
+                }
+            ]
+        )
 
     X_base = _build_x_df(features)
 
@@ -341,18 +382,17 @@ async def sensitivity_analysis(request: DemoRequest):
             new_prob = int(placement_model.predict_proba(X_pert)[0][1] * 100)
 
         prob_change = round(new_prob - base_prob, 1)
-        sensitivities.append({
-            "feature": display_name,
-            "current_value": current_val,
-            "new_value": new_val,
-            "delta_label": f"+{delta}",
-            "probability_change": prob_change
-        })
+        sensitivities.append(
+            {
+                "feature": display_name,
+                "current_value": current_val,
+                "new_value": new_val,
+                "delta_label": f"+{delta}",
+                "probability_change": prob_change,
+            }
+        )
 
     # Sort by probability_change descending (highest improvement first)
     sensitivities.sort(key=lambda x: x["probability_change"], reverse=True)
 
-    return {
-        "base_probability": base_prob,
-        "sensitivities": sensitivities
-    }
+    return {"base_probability": base_prob, "sensitivities": sensitivities}

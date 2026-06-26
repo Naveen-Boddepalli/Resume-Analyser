@@ -24,7 +24,9 @@ The platform analyzes student resumes (PDF/DOCX) and predicts their campus place
 
 ## Current State
 - Project is active and currently following the 8-week MVP plan outlined in `PLAN.md`.
+- **Live Demo (Frontend)**: https://resume-analyser-pink-rho.vercel.app/
 - Configured agent to read and write to this file continuously for context preservation.
+- Configured a GitHub Actions workflow (`.github/workflows/backend-ci-cd.yml`) to enforce strict checks (formatting, linting, type-checking, tests) before triggering Render Deploy Hooks.
 
 ## Important Notes & Decisions
 - MVP uses FastAPI's `BackgroundTasks` instead of Celery/Redis for simplicity.

@@ -6,29 +6,46 @@ import requests
 import time
 from config import MISTRAL_API_KEY, MISTRAL_API_URL
 
+
 def parse_pdf(file_path: str) -> dict:
     doc = fitz.open(file_path)
     text = ""
     for page in doc:
-         blocks = page.get_text("blocks")
-         for block in blocks:
-             text += block[4] + "\n"
+        blocks = page.get_text("blocks")
+        for block in blocks:
+            text += block[4] + "\n"
     return llm_extract_features(text)
+
 
 def parse_docx(file_path: str) -> dict:
     doc = Document(file_path)
     text = "\n".join([para.text for para in doc.paragraphs])
     return llm_extract_features(text)
 
+
 def llm_extract_features(text: str) -> dict:
     text_lower = text.lower()
-    
+
     # Resume Validation Check
-    resume_keywords = ['education', 'experience', 'skills', 'project', 'internship', 'resume', 'profile', 'cgpa', 'university', 'college', 'degree']
+    resume_keywords = [
+        "education",
+        "experience",
+        "skills",
+        "project",
+        "internship",
+        "resume",
+        "profile",
+        "cgpa",
+        "university",
+        "college",
+        "degree",
+    ]
     keyword_matches = sum(1 for kw in resume_keywords if kw in text_lower)
-    
+
     if keyword_matches < 2:
-        raise ValueError("Invalid resume format: The uploaded document does not appear to be a valid resume.")
+        raise ValueError(
+            "Invalid resume format: The uploaded document does not appear to be a valid resume."
+        )
 
     prompt = f"""
     You are an expert resume parser. Extract the following information from the resume text below and return it strictly as a valid JSON object.
@@ -50,28 +67,31 @@ def llm_extract_features(text: str) -> dict:
 
     headers = {
         "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
-    
+
     payload = {
         "model": "mistral-small-latest",
         "messages": [
-            {"role": "system", "content": "You are a robust JSON extraction API. You must return ONLY raw JSON matching the requested structure. No markdown, no explanations."},
-            {"role": "user", "content": prompt}
+            {
+                "role": "system",
+                "content": "You are a robust JSON extraction API. You must return ONLY raw JSON matching the requested structure. No markdown, no explanations.",
+            },
+            {"role": "user", "content": prompt},
         ],
-        "response_format": {"type": "json_object"}
+        "response_format": {"type": "json_object"},
     }
-    
+
     try:
         max_retries = 3
         for attempt in range(max_retries):
             response = requests.post(MISTRAL_API_URL, json=payload, headers=headers)
             if response.status_code == 429 and attempt < max_retries - 1:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             response.raise_for_status()
-            data = json.loads(response.json()['choices'][0]['message']['content'])
-            
+            data = json.loads(response.json()["choices"][0]["message"]["content"])
+
             return {
                 "cgpa": float(data.get("cgpa", 0.0)),
                 "projects_count": int(data.get("projects_count", 0)),
@@ -80,30 +100,40 @@ def llm_extract_features(text: str) -> dict:
                 "skills_list": [str(s).lower() for s in data.get("skills_list", [])],
                 "college_tier": str(data.get("college_tier", "Tier 2")),
                 "branch": str(data.get("branch", "CSE")).upper(),
-                "raw_text": text
+                "raw_text": text,
             }
         raise Exception("Max retries exceeded for LLM parsing")
     except Exception as e:
         print(f"LLM Parsing failed, falling back to regex: {e}")
         return extract_features_fallback(text)
 
+
 def extract_features_fallback(text: str) -> dict:
     text_lower = text.lower()
-    
+
     # Very basic dummy extraction logic
     cgpa = 0.0
-    cgpa_match = re.search(r'cgpa[:\s]*([0-9]+\.[0-9]+)', text_lower)
+    cgpa_match = re.search(r"cgpa[:\s]*([0-9]+\.[0-9]+)", text_lower)
     if cgpa_match:
         try:
             cgpa = float(cgpa_match.group(1))
-        except:
+        except Exception:
             pass
-            
-    projects_count = text_lower.count('project') // 2
-    internships_count = text_lower.count('internship') // 2
-    certifications_count = text_lower.count('certification') // 2
-    
-    skills = ["python", "java", "c++", "machine learning", "react", "sql", "aws", "docker"]
+
+    projects_count = text_lower.count("project") // 2
+    internships_count = text_lower.count("internship") // 2
+    certifications_count = text_lower.count("certification") // 2
+
+    skills = [
+        "python",
+        "java",
+        "c++",
+        "machine learning",
+        "react",
+        "sql",
+        "aws",
+        "docker",
+    ]
     skills_list = [skill for skill in skills if skill in text_lower]
 
     return {
@@ -114,16 +144,17 @@ def extract_features_fallback(text: str) -> dict:
         "skills_list": skills_list,
         "college_tier": "Tier 2",
         "branch": "CSE",
-        "raw_text": text
+        "raw_text": text,
     }
 
+
 def parse_resume(file_path: str) -> dict:
-    if file_path.lower().endswith('.pdf'):
+    if file_path.lower().endswith(".pdf"):
         return parse_pdf(file_path)
-    elif file_path.lower().endswith('.docx'):
+    elif file_path.lower().endswith(".docx"):
         return parse_docx(file_path)
     else:
         # Fallback text parsing if needed
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             text = f.read()
         return llm_extract_features(text)

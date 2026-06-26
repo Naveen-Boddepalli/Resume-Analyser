@@ -4,9 +4,11 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi)
 ![CatBoost](https://img.shields.io/badge/CatBoost-ML-yellow)
 ![Supabase](https://img.shields.io/badge/Supabase-DB-3ECF8E?logo=supabase)
-![Groq](https://img.shields.io/badge/Groq-LLM-f55036)
+![Mistral](https://img.shields.io/badge/Mistral-LLM-f55036)
 
-The **AI Placement Readiness Platform** is an intelligent, end-to-end tool designed to analyze student resumes and predict their campus placement outcomes. By combining Machine Learning (CatBoost), Natural Language Processing (spaCy, PyMuPDF), and Large Language Models (Groq), the platform provides students with highly actionable insights to improve their career prospects.
+**🔗 [Live Demo: Try the Resume Analyser Here!](https://resume-analyser-pink-rho.vercel.app/)**
+
+The **AI Placement Readiness Platform** is an intelligent, end-to-end tool designed to analyze student resumes and predict their campus placement outcomes. By combining Machine Learning (CatBoost), Natural Language Processing (spaCy, PyMuPDF), and Large Language Models (Mistral), the platform provides students with highly actionable insights to improve their career prospects.
 
 ---
 
