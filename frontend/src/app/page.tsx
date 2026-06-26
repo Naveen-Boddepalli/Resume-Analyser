@@ -52,7 +52,7 @@ const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results:
               salaryHigh: features.salary_high || 0,
               shapFeatures: shapFeatures,
               baseValue: analysis.base_value ?? 0.5,
-              recommendations: backendRes.recommendations || []
+              roadmap: backendRes.roadmap || []
             }
           });
         } else if (statusData.status === "failed") {
@@ -172,7 +172,7 @@ export default function Home() {
         salaryHigh: data.features.salary_high || 0,
         shapFeatures: shapFeatures,
         baseValue: analysis.base_value ?? 0.5,
-        recommendations: data.recommendations || []
+        roadmap: data.roadmap || []
       };
       setResults(res1);
 
@@ -188,7 +188,10 @@ export default function Home() {
             ...res1.shapFeatures,
             { name: "Added React Skill", impact: 0.08, value: "Yes" }
           ],
-          recommendations: ["Keep up the great work!"]
+          roadmap: [
+            { timeframe: "Week 1-2", action: "Keep up the great work! Your new skills already boosted your score." },
+            { timeframe: "Week 3-4", action: "Apply to 10+ mid-senior roles." }
+          ]
         };
         setResults2(res2);
       }
@@ -219,7 +222,12 @@ export default function Home() {
           { name: "Missing Python Skills", impact: -0.6, value: "No" },
         ],
         baseValue: 0.5,
-        recommendations: ["Learn Python"],
+        roadmap: [
+          { timeframe: "Week 1-2", action: "Learn Python basics and syntax." },
+          { timeframe: "Week 3-4", action: "Build 2 small Python projects." },
+          { timeframe: "Week 5-6", action: "Practice Data Structures." },
+          { timeframe: "Week 7-8", action: "Start mock interviews." }
+        ],
       };
       setResults(fake1);
       
@@ -266,7 +274,7 @@ export default function Home() {
         salaryHigh: data.features.salary_high || 0,
         shapFeatures: shapFeatures,
         baseValue: analysis.base_value ?? 0.5,
-        recommendations: data.recommendations || []
+        roadmap: data.roadmap || []
       });
     } catch (error) {
       console.error(error);
@@ -491,7 +499,7 @@ export default function Home() {
                     />
                   </div>
                   <div className="h-full">
-                    <RecommendationsPanel recommendations={results.recommendations} />
+                    <RecommendationsPanel roadmap={results.roadmap} />
                   </div>
                 </div>
               </div>

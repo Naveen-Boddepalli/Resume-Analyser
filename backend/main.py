@@ -137,14 +137,16 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
         # 4. LLM Recommendations
         recommendations_str = generate_recommendations(features, shap_results)
         try:
-            recommendations = json.loads(recommendations_str).get("recommendations", [])
-        except:
-            recommendations = []
-
+            roadmap = json.loads(recommendations_str).get("roadmap", [])
+        except Exception as e:
+            print(f"Error getting recommendations: {e}")
+            roadmap = []
+        
+        # Assemble response
         final_result = {
             "features": features,
             "analysis": shap_results,
-            "recommendations": recommendations
+            "roadmap": roadmap
         }
         
         update_job_status(job_id, "completed", final_result)
@@ -263,14 +265,15 @@ async def demo_endpoint(request: DemoRequest):
     shap_results = get_shap_values(placement_model, X_df)
     recommendations_str = generate_recommendations(features, shap_results)
     try:
-        recommendations = json.loads(recommendations_str).get("recommendations", [])
-    except:
-        recommendations = []
+        roadmap = json.loads(recommendations_str).get("roadmap", [])
+    except Exception as e:
+        print(f"Error getting recommendations: {e}")
+        roadmap = []
         
     return {
         "features": features,
         "analysis": shap_results,
-        "recommendations": recommendations
+        "roadmap": roadmap
     }
 
 

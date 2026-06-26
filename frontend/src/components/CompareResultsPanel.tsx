@@ -11,7 +11,7 @@ export interface AnalysisResult {
   salaryHigh: number;
   shapFeatures: ShapFeature[];
   baseValue: number;
-  recommendations: string[];
+  roadmap: { timeframe: string; action: string; }[];
 }
 
 interface CompareResultsPanelProps {
@@ -76,7 +76,7 @@ export function CompareResultsPanel({ results1, results2 }: CompareResultsPanelP
             finalValue={results1.probability / 100}
           />
           <div className="flex-1">
-            <RecommendationsPanel recommendations={results1.recommendations} />
+            <RecommendationsPanel roadmap={results1.roadmap} />
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export function CompareResultsPanel({ results1, results2 }: CompareResultsPanelP
             finalValue={results2.probability / 100}
           />
           <div className="flex-1">
-            <RecommendationsPanel recommendations={results2.recommendations} />
+            <RecommendationsPanel roadmap={results2.roadmap} />
           </div>
         </div>
       </div>

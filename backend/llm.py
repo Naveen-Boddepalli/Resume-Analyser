@@ -6,8 +6,11 @@ from config import MISTRAL_API_KEY, MISTRAL_API_URL
 
 def generate_recommendations(features: dict, shap_results: dict) -> dict:
     prompt = f"""
-    Based on the following resume features and analysis, provide 4 actionable recommendations to improve placement readiness.
-    Return ONLY a JSON object with a 'recommendations' list containing exactly 4 strings.
+    Based on the following resume features and analysis, provide a 4-step week-by-week action plan to improve placement readiness.
+    Return ONLY a JSON object with a 'roadmap' list containing exactly 4 objects.
+    Each object must have:
+    - 'timeframe': A string like "Week 1-2"
+    - 'action': A detailed string describing the action to take.
     
     Features: {json.dumps(features)}
     Analysis: {json.dumps(shap_results)}
@@ -39,4 +42,4 @@ def generate_recommendations(features: dict, shap_results: dict) -> dict:
             return response.json()['choices'][0]['message']['content']
     except Exception as e:
         print(f"LLM Recommendation failed: {e}")
-        return '{"recommendations": ["Improve coding skills by practicing on LeetCode", "Build more full-stack projects", "Apply for internships to gain industry experience", "Practice mock interviews to improve communication"]}'
+        return '{"roadmap": [{"timeframe": "Week 1-2", "action": "Complete Python DSA course"}, {"timeframe": "Week 3-4", "action": "Build a full-stack project"}, {"timeframe": "Week 5-6", "action": "Apply for internships"}, {"timeframe": "Week 7-8", "action": "Practice mock interviews"}]}'
