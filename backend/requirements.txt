@@ -5,9 +5,11 @@ python-docx
 spacy
 catboost
 shap
-groq
 python-multipart
 pydantic
 supabase
 xgboost
 scikit-learn
+python-dotenv
+requests
+pandas
