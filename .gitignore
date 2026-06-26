@@ -48,8 +48,6 @@ MANIFEST
 *.db
 *.sqlite3
 
-# Local test scratch scripts
-test_*.py
 
 # Python Virtual Environments
 .env/
