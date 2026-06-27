@@ -123,9 +123,7 @@ export function OnboardingTour({ hasAnalyzed }: OnboardingTourProps) {
         steps={preAnalysisSteps}
         run={runPre}
         continuous
-        showSkipButton
-        showProgress
-        callback={handlePreJoyrideCallback}
+        onEvent={handlePreJoyrideCallback}
         styles={commonStyles}
         locale={commonLocale}
       />
@@ -133,9 +131,7 @@ export function OnboardingTour({ hasAnalyzed }: OnboardingTourProps) {
         steps={postAnalysisSteps}
         run={runPost}
         continuous
-        showSkipButton
-        showProgress
-        callback={handlePostJoyrideCallback}
+        onEvent={handlePostJoyrideCallback}
         styles={commonStyles}
         locale={commonLocale}
       />
