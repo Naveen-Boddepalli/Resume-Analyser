@@ -83,7 +83,7 @@ export function ShapWaterfall({ features, baseValue, finalValue }: ShapWaterfall
   const gridlines = [0, 25, 50, 75, 100];
 
   return (
-    <div className="bg-card border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
+    <div id="tour-waterfall" className="bg-card border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
       {/* Top accent line */}
       <div className="absolute top-0 left-0 w-full h-1 bg-primary group-hover:h-1.5 transition-all" />
 

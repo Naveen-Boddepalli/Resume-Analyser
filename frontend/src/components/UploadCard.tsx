@@ -41,7 +41,7 @@ export function UploadCard({ onUpload, isLoading = false, title }: UploadCardPro
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
+    <div className="w-full flex flex-col items-center" id="tour-upload">
       {title && <h3 className="text-lg font-bold text-foreground mb-3">{title}</h3>}
       <div
         className={`relative w-full max-w-xl mx-auto rounded-xl border-2 border-dashed p-10 transition-all duration-300 ${

@@ -14,7 +14,7 @@ export function SummaryRow({ probability, salaryRange, salaryLow, salaryHigh }: 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl mx-auto">
       {/* Placement Probability — Radial Gauge */}
-      <div className="bg-card border border-border rounded-xl p-6 flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
+      <div id="tour-probability" className="bg-card border border-border rounded-xl p-6 flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
         <PlacementGauge value={probability} />
       </div>
 

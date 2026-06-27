@@ -13,6 +13,7 @@ import { AssessmentModal, AssessmentType } from "@/components/AssessmentModal";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results: AnalysisResult }> => {
   const formData = new FormData();
@@ -321,6 +322,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-8 md:p-24 space-y-12 bg-gradient-to-br from-background to-muted/30 dark:from-background dark:to-muted/10 transition-colors duration-300">
+      <OnboardingTour hasAnalyzed={hasAnalyzed} />
       <div className="absolute top-4 right-4 md:top-8 md:right-8">
         <ThemeToggle />
       </div>
@@ -379,6 +381,7 @@ export default function Home() {
 
           <div className="flex items-center gap-4">
             <button
+              id="tour-analyze"
               onClick={handleAnalyze}
               disabled={isLoading || (mode === "single" && !file) || (mode === "compare" && (!file || !file2))}
               className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
@@ -391,6 +394,7 @@ export default function Home() {
               {mode === "compare" ? "Analyze Resumes" : "Analyze Resume"}
             </button>
             <button
+              id="tour-demo"
               onClick={handleRunDemo}
               disabled={isLoading}
               className="flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full font-semibold hover:bg-foreground/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"

@@ -17,7 +17,7 @@ export function RecommendationsPanel({
   const safeRoadmap = roadmap || [];
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 w-full h-full flex flex-col shadow-sm hover:shadow-md transition-shadow">
+    <div id="tour-roadmap" className="bg-card border border-border rounded-2xl p-6 w-full h-full flex flex-col shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-primary/10 rounded-lg">
           <Calendar className="w-5 h-5 text-primary" />
