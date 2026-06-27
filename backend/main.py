@@ -41,7 +41,7 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
 
 
 async def get_api_key(api_key: str = Security(api_key_header)):
