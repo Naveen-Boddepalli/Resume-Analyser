@@ -58,6 +58,8 @@ jobs:
     # Only run deployment when pushing to the main branch
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment:
+      name: Production Backend
 
     steps:
       - name: Trigger Render Deploy Hook
