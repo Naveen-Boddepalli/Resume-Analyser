@@ -11,7 +11,7 @@ import { Play, CheckCircle, Download, BookOpen, FileDiff } from "lucide-react";
 import { WhatIfSliders, FeatureSet } from "@/components/WhatIfSliders";
 import { AssessmentModal, AssessmentType } from "@/components/AssessmentModal";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 
