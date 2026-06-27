@@ -1,20 +1,24 @@
-
 import pandas as pd
 import joblib
 import shap
 
-
-model = joblib.load('/Users/boddepallinaveen/Resume-Analyser/models/placement_model.pkl')
-X_df = pd.DataFrame([{
-    "cgpa": 8.5,
-    "internships_count": 1,
-    "projects_count": 3,
-    "coding_skill_score": 100,
-    "communication_skill_score": 80,
-    "leadership_score": 50,
-    "college_tier": "Tier 1",
-    "branch": "CSE"
-}])
+model = joblib.load(
+    "/Users/boddepallinaveen/Resume-Analyser/models/placement_model.pkl"
+)
+X_df = pd.DataFrame(
+    [
+        {
+            "cgpa": 8.5,
+            "internships_count": 1,
+            "projects_count": 3,
+            "coding_skill_score": 100,
+            "communication_skill_score": 80,
+            "leadership_score": 50,
+            "college_tier": "Tier 1",
+            "branch": "CSE",
+        }
+    ]
+)
 
 # some dummy preprocessing if needed, wait, model uses pipeline or directly?
 try:
@@ -28,9 +32,9 @@ try:
             print("shape of shap_values[1]:", shap_values[1].shape)
     else:
         print("shape of shap_values:", shap_values.shape)
-        
+
     print("expected_value:", explainer.expected_value)
-    
+
     prob = model.predict_proba(X_df)
     print("predict_proba:", prob)
 except Exception as e:

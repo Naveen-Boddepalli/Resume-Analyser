@@ -4,6 +4,7 @@ from main import app
 client = TestClient(app)
 HEADERS = {"X-API-Key": "test-secret-key-123"}
 
+
 def test_app_title():
     assert app.title == "AI Placement Readiness Platform API"
 
