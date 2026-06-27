@@ -21,6 +21,9 @@ const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results:
 
   const uploadRes = await fetch("http://localhost:8000/upload", {
     method: "POST",
+    headers: {
+      "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
+    },
     body: formData,
   });
   if (!uploadRes.ok) throw new Error("Upload failed for " + file.name);
@@ -30,7 +33,11 @@ const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results:
   return new Promise((resolve, reject) => {
     const pollInterval = setInterval(async () => {
       try {
-        const statusRes = await fetch(`http://localhost:8000/result/${job_id}`);
+        const statusRes = await fetch(`http://localhost:8000/result/${job_id}`, {
+          headers: {
+            "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
+          }
+        });
         const statusData = await statusRes.json();
         
         if (statusData.status === "completed") {
@@ -142,7 +149,8 @@ export default function Home() {
       const response = await fetch("http://localhost:8000/demo", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
         },
         body: JSON.stringify({
           cgpa: 8.5,
@@ -255,6 +263,7 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
         },
         body: JSON.stringify(payload),
       });

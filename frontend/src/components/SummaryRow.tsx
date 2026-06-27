@@ -1,5 +1,5 @@
 import React from "react";
-import { DollarSign } from "lucide-react";
+import { IndianRupee } from "lucide-react";
 import { PlacementGauge } from "./PlacementGauge";
 import { SalaryContext } from "./SalaryContext";
 
@@ -22,7 +22,7 @@ export function SummaryRow({ probability, salaryRange, salaryLow, salaryHigh }: 
       <div className="bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
         <div className="flex items-center mb-5">
           <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mr-5 shrink-0">
-            <DollarSign className="w-8 h-8 text-blue-600" />
+            <IndianRupee className="w-8 h-8 text-blue-600" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-muted-foreground truncate">

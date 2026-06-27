@@ -106,7 +106,11 @@ export function SalaryContext({ salaryLow, salaryHigh }: SalaryContextProps) {
     setLoading(true);
     setError(false);
 
-    fetch("http://localhost:8000/salary-distribution")
+    fetch("http://localhost:8000/salary-distribution", {
+      headers: {
+        "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
+      },
+    })
       .then((res) => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();

@@ -6,10 +6,14 @@ import joblib
 import numpy as np
 import pandas as pd
 from typing import Optional, Any
-from fastapi import FastAPI, File, UploadFile, BackgroundTasks, HTTPException
+from fastapi import FastAPI, File, UploadFile, BackgroundTasks, HTTPException, Security, Request, Depends
+from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from parser import parse_resume
 from feature_mapper import (
@@ -23,6 +27,17 @@ from config import SUPABASE_URL, SUPABASE_KEY
 
 app = FastAPI(title="AI Placement Readiness Platform API")
 
+API_KEY = os.getenv("API_KEY", "test-secret-key-123")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+async def get_api_key(api_key: str = Security(api_key_header)):
+    if api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+    return api_key
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -182,8 +197,12 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
 
 
 @app.post("/upload")
+@limiter.limit("5/minute")
 async def upload_resume(
-    background_tasks: BackgroundTasks, file: UploadFile = File(...)
+    request: Request,
+    background_tasks: BackgroundTasks, 
+    file: UploadFile = File(...),
+    api_key: str = Depends(get_api_key)
 ):
     job_id = str(uuid.uuid4())
 
@@ -222,7 +241,8 @@ async def upload_resume(
 
 
 @app.get("/result/{job_id}")
-async def get_result(job_id: str):
+@limiter.limit("60/minute")
+async def get_result(request: Request, job_id: str, api_key: str = Depends(get_api_key)):
     job = get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -230,7 +250,8 @@ async def get_result(job_id: str):
 
 
 @app.get("/report/{job_id}")
-async def get_report(job_id: str):
+@limiter.limit("60/minute")
+async def get_report(request: Request, job_id: str, api_key: str = Depends(get_api_key)):
     job = get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -262,8 +283,9 @@ class DemoRequest(BaseModel):
 
 
 @app.post("/demo")
-async def demo_endpoint(request: DemoRequest):
-    features = request.model_dump()
+@limiter.limit("20/minute")
+async def demo_endpoint(request: Request, demo_req: DemoRequest, api_key: str = Depends(get_api_key)):
+    features = demo_req.model_dump()
 
     if features.get("coding_score") is None:
         features["coding_score"] = estimate_coding_score(features)
@@ -312,7 +334,8 @@ async def demo_endpoint(request: DemoRequest):
 
 
 @app.get("/salary-distribution")
-async def salary_distribution():
+@limiter.limit("60/minute")
+async def salary_distribution(request: Request, api_key: str = Depends(get_api_key)):
     if _salary_dist_cache is None:
         raise HTTPException(
             status_code=500,
@@ -322,8 +345,9 @@ async def salary_distribution():
 
 
 @app.post("/sensitivity")
-async def sensitivity_analysis(request: DemoRequest):
-    features = request.model_dump()
+@limiter.limit("20/minute")
+async def sensitivity_analysis(request: Request, demo_req: DemoRequest, api_key: str = Depends(get_api_key)):
+    features = demo_req.model_dump()
 
     if features.get("coding_score") is None:
         features["coding_score"] = estimate_coding_score(features)
