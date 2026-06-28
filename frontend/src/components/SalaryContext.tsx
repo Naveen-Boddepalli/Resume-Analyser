@@ -103,10 +103,11 @@ export function SalaryContext({ salaryLow, salaryHigh }: SalaryContextProps) {
 
   useEffect(() => {
     let cancelled = false;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     setLoading(true);
     setError(false);
 
-    fetch("http://localhost:8000/salary-distribution", {
+    fetch(`${API_URL}/salary-distribution`, {
       headers: {
         "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
       },

@@ -41,7 +41,8 @@ export function SensitivityPanel({ currentFeatures, baseProbability }: Sensitivi
         leadership_score: currentFeatures.leadership_score ?? 50,
       };
 
-      const res = await fetch("http://localhost:8000/sensitivity", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/sensitivity`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -15,11 +15,13 @@ import { jsPDF } from "jspdf";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results: AnalysisResult }> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const uploadRes = await fetch("http://localhost:8000/upload", {
+  const uploadRes = await fetch(`${API_URL}/upload`, {
     method: "POST",
     headers: {
       "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
@@ -33,7 +35,7 @@ const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results:
   return new Promise((resolve, reject) => {
     const pollInterval = setInterval(async () => {
       try {
-        const statusRes = await fetch(`http://localhost:8000/result/${job_id}`, {
+        const statusRes = await fetch(`${API_URL}/result/${job_id}`, {
           headers: {
             "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
           }
@@ -146,7 +148,7 @@ export default function Home() {
   const handleRunDemo = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/demo", {
+      const response = await fetch(`${API_URL}/demo`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,7 +261,7 @@ export default function Home() {
       const payload = { ...features };
       if (!payload.skills_list) payload.skills_list = [];
 
-      const response = await fetch("http://localhost:8000/demo", {
+      const response = await fetch(`${API_URL}/demo`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
