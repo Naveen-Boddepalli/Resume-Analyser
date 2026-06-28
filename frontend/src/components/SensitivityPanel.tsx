@@ -44,7 +44,10 @@ export function SensitivityPanel({ currentFeatures, baseProbability }: Sensitivi
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${API_URL}/sensitivity`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
+        },
         body: JSON.stringify(payload),
       });
 
