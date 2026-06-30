@@ -28,6 +28,7 @@ The platform analyzes student resumes (PDF/DOCX) and predicts their campus place
 - Configured agent to read and write to this file continuously for context preservation.
 - Configured a GitHub Actions workflow (`.github/workflows/backend-ci-cd.yml`) to enforce strict checks (formatting, linting, type-checking, tests) before triggering Render Deploy Hooks.
 - Added Docker support with separate Dockerfiles for backend and frontend, and a `docker-compose.yml` for orchestration.
+- Configured a GitHub Actions workflow (`.github/workflows/docker-publish.yml`) to automatically build and push frontend and backend Docker images to Docker Hub (`naveenboddepalli/*`) whenever a new GitHub Release is published.
 
 ## Important Notes & Decisions
 - MVP uses FastAPI's `BackgroundTasks` instead of Celery/Redis for simplicity.
