@@ -27,6 +27,7 @@ The platform analyzes student resumes (PDF/DOCX) and predicts their campus place
 - **Live Demo (Frontend)**: https://resume-analyser-pink-rho.vercel.app/
 - Configured agent to read and write to this file continuously for context preservation.
 - Configured a GitHub Actions workflow (`.github/workflows/backend-ci-cd.yml`) to enforce strict checks (formatting, linting, type-checking, tests) before triggering Render Deploy Hooks.
+- Added Docker support with separate Dockerfiles for backend and frontend, and a `docker-compose.yml` for orchestration.
 
 ## Important Notes & Decisions
 - MVP uses FastAPI's `BackgroundTasks` instead of Celery/Redis for simplicity.

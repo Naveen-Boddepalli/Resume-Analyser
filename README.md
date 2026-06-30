@@ -51,7 +51,24 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 Follow these instructions to set up the project locally.
 
 > [!IMPORTANT]
-> Ensure you have Python 3.10+ and Node.js 20+ installed on your system before proceeding.
+> Ensure you have Python 3.10+ and Node.js 20+ installed on your system before proceeding with manual setup, or just Docker for the containerized setup.
+
+### 🐳 Run with Docker (Easiest Way)
+
+You can run the entire application (frontend + backend) using a single command with Docker.
+
+1. Create a `.env` file in the `backend/` directory:
+   ```env
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_KEY=your_supabase_anon_key
+   MISTRAL_API_KEY=your_mistral_api_key
+   MISTRAL_API_URL=https://api.mistral.ai/v1/chat/completions
+   ```
+2. From the root directory of the project, run:
+   ```bash
+   docker-compose up --build
+   ```
+   *Your frontend will be available at `http://localhost:3000` and the backend at `http://localhost:8000`.*
 
 ### 1. Backend Setup (FastAPI)
 
