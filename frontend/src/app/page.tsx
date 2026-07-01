@@ -394,7 +394,7 @@ export default function Home() {
             <button
               id="tour-analyze"
               onClick={handleAnalyze}
-              disabled={isLoading || (mode === "single" && !file) || (mode === "compare" && (!file || !file2))}
+              disabled={isLoading || hasAnalyzed || (mode === "single" && !file) || (mode === "compare" && (!file || !file2))}
               className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
               {isLoading ? (
