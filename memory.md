@@ -26,7 +26,11 @@ The platform analyzes student resumes (PDF/DOCX) and predicts their campus place
 - Project is active and currently following the 8-week MVP plan outlined in `PLAN.md`.
 - **Live Demo (Frontend)**: https://resume-analyser-pink-rho.vercel.app/
 - Configured agent to read and write to this file continuously for context preservation.
-- Configured a GitHub Actions workflow (`.github/workflows/backend-ci-cd.yml`) to enforce strict checks (formatting, linting, type-checking, tests) before triggering Render Deploy Hooks.
+- Configured an extensive GitHub Actions CI/CD pipeline:
+  - `backend-ci-cd.yml`: strict checks (Black, Flake8, Mypy, Pytest) on `backend/` and `ml/`, triggering Render deploy on success.
+  - `frontend-ci.yml`: dependency security audits (`npm audit`) and `npm run lint`.
+  - `security-ci.yml`: Gitleaks for secret scanning and Bandit for Python security auditing.
+  - `lint-ci.yml`: Markdown linting and Dockerfile linting (Hadolint).
 - Added Docker support with separate Dockerfiles for backend and frontend, and a `docker-compose.yml` for orchestration.
 - Configured a GitHub Actions workflow (`.github/workflows/docker-publish.yml`) to automatically build and push frontend and backend Docker images to Docker Hub (`naveenboddepalli/*`) whenever a new GitHub Release is published.
 

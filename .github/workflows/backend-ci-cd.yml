@@ -6,21 +6,19 @@ on:
       - main
     paths:
       - 'backend/**'
+      - 'ml/**'
       - '.github/workflows/backend-ci-cd.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'backend/**'
+      - 'ml/**'
 
 jobs:
   checks:
     name: Code Quality and Tests
     runs-on: ubuntu-latest
-    
-    defaults:
-      run:
-        working-directory: ./backend
 
     steps:
       - name: Checkout Code
@@ -35,22 +33,22 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r backend/requirements.txt
           # Installing linting and testing tools
           pip install black flake8 mypy pytest httpx
 
       - name: Check code formatting with Black
-        run: black --check .
+        run: black --check backend ml
 
       - name: Lint with flake8
-        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        run: flake8 backend ml --count --select=E9,F63,F7,F82 --show-source --statistics
         
       - name: Run mypy (type checking)
         # mypy might fail initially if code isn't fully typed, adjust strictly as needed
-        run: mypy . --ignore-missing-imports
+        run: mypy backend ml --ignore-missing-imports
 
       - name: Run tests with pytest
-        run: pytest
+        run: pytest backend
 
   deploy:
     name: Deploy to Render
