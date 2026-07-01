@@ -6,9 +6,29 @@
 ![Supabase](https://img.shields.io/badge/Supabase-DB-3ECF8E?logo=supabase)
 ![Mistral](https://img.shields.io/badge/Mistral-LLM-f55036)
 
+[![Backend CI/CD](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/backend-ci-cd.yml/badge.svg)](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/backend-ci-cd.yml)
+[![Frontend CI](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/frontend-ci.yml)
+[![Security Checks](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/security-ci.yml/badge.svg)](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/security-ci.yml)
+
 > **🔗 [Live Demo: Try the Resume Analyser Here!](https://resume-analyser-pink-rho.vercel.app/)**
 
-The **AI Placement Readiness Platform** is an intelligent, end-to-end tool designed to analyze student resumes and predict their campus placement outcomes. By combining Machine Learning (CatBoost), Natural Language Processing (spaCy, PyMuPDF), and Large Language Models (Mistral), the platform provides students with highly actionable insights to improve their career prospects.
+The **AI Placement Readiness Platform** is an intelligent, end-to-end tool designed to analyze student resumes and predict their campus placement outcomes. By combining Machine Learning, Natural Language Processing, and Large Language Models, the platform provides students with highly actionable insights to improve their career prospects.
+
+---
+
+## 📑 Table of Contents
+
+- [✨ Key Features](#-key-features)
+- [🛠️ Tech Stack](#-tech-stack)
+- [🚀 Getting Started](#-getting-started)
+  - [🐳 Run with Docker (Easiest Way)](#-run-with-docker-easiest-way)
+  - [1. Backend Setup (FastAPI)](#1-backend-setup-fastapi)
+  - [2. Frontend Setup (Next.js)](#2-frontend-setup-nextjs)
+- [🧪 CI/CD & Testing Guidelines](#-cicd--testing-guidelines)
+- [📡 API Endpoints](#-api-endpoints)
+- [🤝 Contributing](#-contributing)
+- [🗺️ Roadmap](#-roadmap)
+- [📄 License](#-license)
 
 ---
 
@@ -27,8 +47,7 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 
 ### Frontend
 - **Framework**: Next.js (App Router)
-- **Styling**: Tailwind CSS
-- **Components**: `shadcn/ui`
+- **Styling**: Tailwind CSS, `shadcn/ui`
 
 ### Backend
 - **Framework**: FastAPI (Python)
@@ -38,8 +57,7 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 ### Machine Learning & NLP
 - **Predictive Modeling**: CatBoost, XGBoost
 - **Explainability**: SHAP (SHapley Additive exPlanations)
-- **Document Parsing**: `PyMuPDF` (fitz), `python-docx`
-- **NLP**: `spaCy`
+- **Document Parsing & NLP**: `PyMuPDF` (fitz), `python-docx`, `spaCy`
 
 ### AI / LLM
 - **Inference**: Mistral API (High-speed structured generation)
@@ -48,10 +66,7 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 
 ## 🚀 Getting Started
 
-Follow these instructions to set up the project locally.
-
-> [!IMPORTANT]
-> Ensure you have Python 3.10+ and Node.js 20+ installed on your system before proceeding with manual setup, or just Docker for the containerized setup.
+Ensure you have **Python 3.10+** and **Node.js 20+** installed on your system before proceeding with manual setup, or just Docker for the containerized setup.
 
 ### 🐳 Run with Docker (Easiest Way)
 
@@ -76,7 +91,6 @@ You can run the entire application (frontend + backend) using a single command w
    ```bash
    cd backend
    ```
-
 2. Create a virtual environment and install dependencies:
    ```bash
    python -m venv .venv
@@ -85,23 +99,20 @@ You can run the entire application (frontend + backend) using a single command w
    pip install -r requirements.txt
    
    # Install development and testing tools
-   pip install black flake8 mypy pytest httpx
+   pip install "black[jupyter]" flake8 mypy pytest httpx bandit
    ```
-
-3. Configure Environment Variables:
-   Create a `.env` file in the `backend/` directory:
+3. Configure Environment Variables in `backend/.env`:
    ```env
    SUPABASE_URL=your_supabase_project_url
    SUPABASE_KEY=your_supabase_anon_key
    MISTRAL_API_KEY=your_mistral_api_key
    MISTRAL_API_URL=https://api.mistral.ai/v1/chat/completions
    ```
-
 4. Run the server:
    ```bash
    uvicorn main:app --reload --port 8000
    ```
-   *The backend API will be available at `http://localhost:8000`. API documentation is available at `http://localhost:8000/docs`.*
+   *API documentation is available at `http://localhost:8000/docs`.*
 
 ### 2. Frontend Setup (Next.js)
 
@@ -109,70 +120,44 @@ You can run the entire application (frontend + backend) using a single command w
    ```bash
    cd frontend
    ```
-
 2. Install dependencies:
    ```bash
-   npm install
+   npm ci
    ```
-
-3. Configure Environment Variables:
-   Create a `.env.local` file in the `frontend/` directory:
+3. Configure Environment Variables in `frontend/.env.local`:
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:8000
    ```
-
 4. Run the development server:
    ```bash
    npm run dev
    ```
-   *The frontend will be available at `http://localhost:3000`.*
 
 ---
 
-## 🧪 Pre-Push Testing & CI Guidelines
+## 🧪 CI/CD & Testing Guidelines
 
-To maintain a robust and bug-free codebase, we employ strict Continuous Integration (CI) pipelines using GitHub Actions. **Code that fails these checks will be blocked from deployment.** 
+To maintain a robust and secure codebase, this repository enforces strict Continuous Integration (CI) pipelines using GitHub Actions. **Code that fails these checks will be blocked from merging.**
 
-Before pushing your commits or opening a Pull Request, please ensure you run the following checks locally:
+Before pushing your commits or opening a Pull Request, please ensure your code passes the following local checks:
 
-> [!TIP]
-> For more detailed contribution guidelines, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md).
-
-### Backend Checks
-Run these commands inside the `backend/` directory with your virtual environment activated:
-
-1. **Formatting**: Ensure your code meets style standards.
-   ```bash
-   black .
-   ```
-2. **Linting**: Check for syntax errors and unused variables.
-   ```bash
-   flake8 .
-   ```
-3. **Type Checking**: Verify Python static typing.
-   ```bash
-   mypy . --ignore-missing-imports
-   ```
-4. **Unit Tests**: Run the test suite to ensure no endpoints are broken.
-   ```bash
-   pytest
-   ```
+### Backend & ML Checks
+Run these from the root of the project with your virtual environment activated:
+- **Formatting**: `black backend ml`
+- **Linting**: `flake8 backend ml`
+- **Type Checking**: `mypy backend ml --ignore-missing-imports`
+- **Security Audit**: `bandit -r backend ml -ll -i`
+- **Unit Tests**: `pytest backend`
 
 ### Frontend Checks
-Run these commands inside the `frontend/` directory:
-
-1. **Linting**: Run the Next.js ESLint configuration.
-   ```bash
-   npm run lint
-   ```
-2. **Type Check & Build**: Ensure the application compiles fully without errors.
-   ```bash
-   npm run build
-   ```
+Run these inside the `frontend/` directory:
+- **Linting**: `npm run lint`
+- **Security Audit**: `npm audit --audit-level=high`
+- **Build Verification**: `npm run build`
 
 ---
 
-## 📡 API Endpoints (Backend)
+## 📡 API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -184,9 +169,15 @@ Run these commands inside the `frontend/` directory:
 
 ---
 
-## 🗺️ Roadmap & Future Enhancements
+## 🤝 Contributing
 
-The current V1 represents a complete MVP. Planned future (V2) enhancements include:
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on how to submit pull requests, report issues, and suggest enhancements.
+
+---
+
+## 🗺️ Roadmap
+
+Planned future (V2) enhancements include:
 - **Advanced Orchestration**: Celery & Redis for handling high-concurrency workloads.
 - **Enhanced NLP**: Sentence Transformers and FAISS for semantic skill matching.
 - **Model Tracking**: MLflow for versioning models and tracking experiment metrics.
@@ -197,4 +188,4 @@ The current V1 represents a complete MVP. Planned future (V2) enhancements inclu
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
