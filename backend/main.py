@@ -209,7 +209,7 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
 
 
 @app.post("/upload")
-@limiter.limit("5/minute")
+@limiter.limit("5/day")
 async def upload_resume(
     request: Request,
     background_tasks: BackgroundTasks,
@@ -299,7 +299,7 @@ class DemoRequest(BaseModel):
 
 
 @app.post("/demo")
-@limiter.limit("20/minute")
+@limiter.limit("20/day")
 async def demo_endpoint(
     request: Request, demo_req: DemoRequest, api_key: str = Depends(get_api_key)
 ):
@@ -363,7 +363,7 @@ async def salary_distribution(request: Request, api_key: str = Depends(get_api_k
 
 
 @app.post("/sensitivity")
-@limiter.limit("20/minute")
+@limiter.limit("20/day")
 async def sensitivity_analysis(
     request: Request, demo_req: DemoRequest, api_key: str = Depends(get_api_key)
 ):
