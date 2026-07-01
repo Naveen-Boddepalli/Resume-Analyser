@@ -205,7 +205,7 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
         try:
             supabase.storage.from_("resumes").remove([storage_path])
         except Exception as e:
-            print(f"Failed to delete {storage_path} from Supabase: {e}")
+            print(f"Failed to delete {storage_path} from Supabase: {e}")  # nosec B608
 
 
 @app.post("/upload")
