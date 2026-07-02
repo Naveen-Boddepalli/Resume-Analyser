@@ -33,6 +33,7 @@ The platform analyzes student resumes (PDF/DOCX) and predicts their campus place
   - `lint-ci.yml`: Markdown linting and Dockerfile linting (Hadolint).
 - Added Docker support with separate Dockerfiles for backend and frontend, and a `docker-compose.yml` for orchestration.
 - Configured a GitHub Actions workflow (`.github/workflows/docker-publish.yml`) to automatically build and push frontend and backend Docker images to Docker Hub (`naveenboddepalli/*`) whenever a new GitHub Release is published.
+- Currently analyzing requirements to integrate Google AdSense into the Next.js frontend to monetize the application.
 
 ## Important Notes & Decisions
 - MVP uses FastAPI's `BackgroundTasks` instead of Celery/Redis for simplicity.
