@@ -210,7 +210,7 @@ def process_resume(job_id: str, file_path: str, storage_path: str):
 
 
 @app.post("/upload")
-@limiter.limit("5/day")
+@limiter.limit("50/day")
 async def upload_resume(
     request: Request,
     background_tasks: BackgroundTasks,

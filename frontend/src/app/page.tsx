@@ -29,7 +29,11 @@ const runAnalysis = async (file: File): Promise<{ features: FeatureSet, results:
     },
     body: formData,
   });
-  if (!uploadRes.ok) throw new Error("Upload failed for " + file.name);
+  if (!uploadRes.ok) {
+    const errorData = await uploadRes.json().catch(() => ({}));
+    const errorMsg = errorData.error || (typeof errorData.detail === 'string' ? errorData.detail : "Upload failed for " + file.name);
+    throw new Error(errorMsg);
+  }
   
   const { job_id } = await uploadRes.json();
 
