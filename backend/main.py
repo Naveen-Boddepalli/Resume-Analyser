@@ -56,6 +56,7 @@ app.add_middleware(
         "http://localhost:3000",
         "https://resume-analyser-pink-rho.vercel.app",
     ],
+    allow_origin_regex=r"http://localhost:\d+",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

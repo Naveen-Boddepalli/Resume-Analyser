@@ -14,6 +14,7 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OnboardingTour } from "@/components/OnboardingTour";
+import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -350,75 +351,74 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Mode Toggle */}
-        <div className="flex justify-center">
-          <div className="bg-card border p-1 rounded-xl shadow-sm inline-flex items-center">
-            <button
-              onClick={() => handleModeSwitch("single")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all text-sm ${
-                mode === "single" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-muted"
-              }`}
-            >
-              Analyze Single Resume
-            </button>
-            <button
-              onClick={() => handleModeSwitch("compare")}
-              className={`px-6 py-2 rounded-lg font-medium transition-all text-sm flex items-center gap-2 ${
-                mode === "compare" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-muted"
-              }`}
-            >
-              <FileDiff className="w-4 h-4" />
-              Compare Two Resumes
-            </button>
-          </div>
-        </div>
-
-        {/* Upload Section */}
-        <section className="flex flex-col items-center space-y-6">
-          {mode === "single" ? (
-            <UploadCard onUpload={handleUpload} isLoading={isLoading} />
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-              <UploadCard onUpload={handleUpload} isLoading={isLoading} title="Original Resume" />
-              <UploadCard onUpload={handleUpload2} isLoading={isLoading} title="Updated Resume" />
+        {/* Conditionally render Loading Skeleton or Upload Section */}
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <>
+            {/* Mode Toggle */}
+            <div className="flex justify-center">
+              <div className="bg-card border p-1 rounded-xl shadow-sm inline-flex items-center">
+                <button
+                  onClick={() => handleModeSwitch("single")}
+                  className={`px-6 py-2 rounded-lg font-medium transition-all text-sm ${
+                    mode === "single" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-muted"
+                  }`}
+                >
+                  Analyze Single Resume
+                </button>
+                <button
+                  onClick={() => handleModeSwitch("compare")}
+                  className={`px-6 py-2 rounded-lg font-medium transition-all text-sm flex items-center gap-2 ${
+                    mode === "compare" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-muted"
+                  }`}
+                >
+                  <FileDiff className="w-4 h-4" />
+                  Compare Two Resumes
+                </button>
+              </div>
             </div>
-          )}
-          
-          {error && (
-            <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
-              {error}
-            </div>
-          )}
 
-          <div className="flex items-center gap-4">
-            <button
-              id="tour-analyze"
-              onClick={handleAnalyze}
-              disabled={isLoading || hasAnalyzed || (mode === "single" && !file) || (mode === "compare" && (!file || !file2))}
-              className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+            {/* Upload Section */}
+            <section className="flex flex-col items-center space-y-6 mt-6">
+              {mode === "single" ? (
+                <UploadCard onUpload={handleUpload} isLoading={isLoading} />
               ) : (
-                <CheckCircle className="w-5 h-5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                  <UploadCard onUpload={handleUpload} isLoading={isLoading} title="Original Resume" />
+                  <UploadCard onUpload={handleUpload2} isLoading={isLoading} title="Updated Resume" />
+                </div>
               )}
-              {mode === "compare" ? "Analyze Resumes" : "Analyze Resume"}
-            </button>
-            <button
-              id="tour-demo"
-              onClick={handleRunDemo}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full font-semibold hover:bg-foreground/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Play className="w-5 h-5" />
+              
+              {error && (
+                <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+                  {error}
+                </div>
               )}
-              Run Demo
-            </button>
-          </div>
-        </section>
+
+              <div className="flex items-center gap-4">
+                <button
+                  id="tour-analyze"
+                  onClick={handleAnalyze}
+                  disabled={isLoading || hasAnalyzed || (mode === "single" && !file) || (mode === "compare" && (!file || !file2))}
+                  className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  {mode === "compare" ? "Analyze Resumes" : "Analyze Resume"}
+                </button>
+                <button
+                  id="tour-demo"
+                  onClick={handleRunDemo}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full font-semibold hover:bg-foreground/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                >
+                  <Play className="w-5 h-5" />
+                  Run Demo
+                </button>
+              </div>
+            </section>
+          </>
+        )}
 
         {/* Results Section */}
         {mode === "compare" ? (
