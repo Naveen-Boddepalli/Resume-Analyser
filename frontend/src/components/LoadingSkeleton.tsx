@@ -19,7 +19,7 @@ export function LoadingSkeleton() {
   useEffect(() => {
     // If backend is local, it's fast (~2s total). If on Render, it takes ~25-50s due to cold start.
     const isLocal = API_URL.includes("localhost") || API_URL.includes("127.0.0.1");
-    const intervals = isLocal ? [500, 600, 700, 600] : [8000, 5000, 6000, 5000]; 
+    const intervals = isLocal ? [200, 200, 200, 200] : [8000, 5000, 6000, 5000];
     
     let timerId: NodeJS.Timeout;
     
@@ -43,33 +43,33 @@ export function LoadingSkeleton() {
         <div className="bg-card border shadow-lg rounded-2xl p-6 space-y-6 flex flex-col h-full relative overflow-hidden">
           <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-foreground/5 to-transparent z-10" />
           
-          <h2 className="text-xl font-bold text-center text-foreground">Your Score</h2>
+          <h2 className="text-xl font-bold text-center text-foreground">Placement Score</h2>
           
           <div className="flex flex-col items-center justify-center space-y-4 py-4">
             {/* Fake Gauge */}
-            <div className="w-32 h-16 bg-muted rounded-t-full relative overflow-hidden">
+            <div className="w-32 h-16 bg-slate-200 dark:bg-slate-700 rounded-t-full relative overflow-hidden">
               <div className="absolute bottom-0 w-full h-[1px] bg-muted-foreground/30" />
               <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-muted-foreground rounded-full -translate-x-1/2 translate-y-1/2" />
             </div>
             
             <div className="space-y-2 flex flex-col items-center">
-              <div className="h-4 w-16 bg-muted rounded-full" />
-              <div className="h-3 w-20 bg-muted rounded-full" />
+              <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded-full" />
+              <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded-full" />
             </div>
           </div>
           
           <div className="space-y-4 pt-4 border-t border-border">
-            {["CONTENT", "SECTION", "ATS ESSENTIALS", "TAILORING"].map((item, i) => (
+            {["CGPA", "PROJECTS", "INTERNSHIPS", "CERTIFICATIONS"].map((item, i) => (
               <div key={i} className="flex justify-between items-center">
                 <span className="text-xs font-semibold text-muted-foreground">{item}</span>
-                <div className="w-8 h-4 bg-muted rounded-full" />
+                <div className="w-8 h-4 bg-slate-200 dark:bg-slate-700 rounded-full" />
               </div>
             ))}
           </div>
 
           <div className="mt-auto pt-6 border-t border-border">
-            <div className="w-full h-10 bg-muted/50 rounded-lg flex items-center justify-center">
-              <span className="text-sm font-semibold text-muted-foreground">Unlock Full Report</span>
+            <div className="w-full h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+              <span className="text-sm font-semibold text-muted-foreground">Generating Report...</span>
             </div>
           </div>
         </div>
