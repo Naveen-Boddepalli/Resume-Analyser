@@ -6,7 +6,7 @@ import { CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const STEPS = [
-  "Waking up backend server (Render free tier)",
+  "Connecting to analysis server",
   "Parsing your resume",
   "Analyzing your experience",
   "Extracting your skills",
@@ -17,9 +17,11 @@ export function LoadingSkeleton() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    // If backend is local, it's fast (~2s total). If on Render, it takes ~25-50s due to cold start.
+    // Even on Render, the backend might already be awake and finish in ~4s. 
+    // We speed through the first few steps quickly so it doesn't look stuck if it finishes fast.
+    // If it's a cold start (~50s), it will just hang on the final "Generating recommendations" step, which is fine!
     const isLocal = API_URL.includes("localhost") || API_URL.includes("127.0.0.1");
-    const intervals = isLocal ? [200, 200, 200, 200] : [8000, 5000, 6000, 5000];
+    const intervals = isLocal ? [200, 200, 200, 200] : [800, 1200, 1500, 1500];
     
     let timerId: NodeJS.Timeout;
     
