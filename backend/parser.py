@@ -1,160 +1,80 @@
-import fitz  # PyMuPDF
-from docx import Document
+"""Resume text extraction (PDF, DOCX, TXT). Works on bytes in memory; nothing is written to disk."""
+
+from __future__ import annotations
+
+import io
 import re
-import json
-import requests
-import time
-from config import MISTRAL_API_KEY, MISTRAL_API_URL
+
+MAX_BYTES = 5 * 1024 * 1024
+MAX_PAGES = 12
+_RESUME_WORDS = (
+    "education",
+    "experience",
+    "skills",
+    "project",
+    "internship",
+    "summary",
+    "profile",
+    "university",
+    "college",
+    "degree",
+    "certification",
+    "employment",
+)
 
 
-def parse_pdf(file_path: str) -> dict:
-    doc = fitz.open(file_path)
-    text = ""
-    for page in doc:
-        blocks = page.get_text("blocks")
-        for block in blocks:
-            text += block[4] + "\n"
-    return llm_extract_features(text)
+class ResumeParseError(ValueError):
+    """The document could not be read or contained no text."""
 
 
-def parse_docx(file_path: str) -> dict:
-    doc = Document(file_path)
-    text = "\n".join([para.text for para in doc.paragraphs])
-    return llm_extract_features(text)
-
-
-def llm_extract_features(text: str) -> dict:
-    text_lower = text.lower()
-
-    # Resume Validation Check
-    resume_keywords = [
-        "education",
-        "experience",
-        "skills",
-        "project",
-        "internship",
-        "resume",
-        "profile",
-        "cgpa",
-        "university",
-        "college",
-        "degree",
-    ]
-    keyword_matches = sum(1 for kw in resume_keywords if kw in text_lower)
-
-    if keyword_matches < 2:
-        raise ValueError(
-            "Invalid resume format: The uploaded document does not appear to be a valid resume."
-        )
-
-    prompt = f"""
-    You are an expert resume parser. Extract the following information from the resume text below and return it strictly as a valid JSON object.
-    
-    Required JSON structure:
-    {{
-      "cgpa": <float, out of 10.0, default 0.0 if not found>,
-      "projects_count": <int, total number of distinct projects, default 0>,
-      "internships_count": <int, total number of distinct internships/work experiences, default 0>,
-      "certifications_count": <int, total number of distinct certifications, default 0>,
-      "skills_list": [<list of strings, exact technical skills found (e.g. "python", "react", "aws")>],
-      "college_tier": <string, one of: "Tier 1", "Tier 2", "Tier 3" based on the university prestige. Default "Tier 2">,
-      "branch": <string, degree major abbreviation e.g., "CSE", "IT", "ECE", "EEE", "Mechanical". Default "CSE">
-    }}
-    
-    Resume Text:
-    {text[:4000]}
-    """
-
-    headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json",
-    }
-
-    payload = {
-        "model": "mistral-small-latest",
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are a robust JSON extraction API. You must return ONLY raw JSON matching the requested structure. No markdown, no explanations.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "response_format": {"type": "json_object"},
-    }
+def _pdf_text(content: bytes) -> str:
+    import fitz  # PyMuPDF
 
     try:
-        max_retries = 3
-        for attempt in range(max_retries):
-            response = requests.post(MISTRAL_API_URL, json=payload, headers=headers, timeout=15)  # type: ignore
-            if response.status_code == 429 and attempt < max_retries - 1:
-                time.sleep(2**attempt)
-                continue
-            response.raise_for_status()
-            data = json.loads(response.json()["choices"][0]["message"]["content"])
-
-            return {
-                "cgpa": float(data.get("cgpa", 0.0)),
-                "projects_count": int(data.get("projects_count", 0)),
-                "internships_count": int(data.get("internships_count", 0)),
-                "certifications_count": int(data.get("certifications_count", 0)),
-                "skills_list": [str(s).lower() for s in data.get("skills_list", [])],
-                "college_tier": str(data.get("college_tier", "Tier 2")),
-                "branch": str(data.get("branch", "CSE")).upper(),
-                "raw_text": text,
-            }
-        raise Exception("Max retries exceeded for LLM parsing")
-    except Exception as e:
-        print(f"LLM Parsing failed, falling back to regex: {e}")
-        return extract_features_fallback(text)
+        doc = fitz.open(stream=content, filetype="pdf")
+    except Exception as exc:  # noqa: BLE001
+        raise ResumeParseError("The PDF could not be opened.") from exc
+    parts: list[str] = []
+    with doc:
+        for page in list(doc)[:MAX_PAGES]:
+            blocks = sorted(page.get_text("blocks"), key=lambda b: (round(b[1] / 8), b[0]))
+            parts.extend(str(b[4]).strip() for b in blocks if str(b[4]).strip())
+    return "\n".join(parts)
 
 
-def extract_features_fallback(text: str) -> dict:
-    text_lower = text.lower()
+def _docx_text(content: bytes) -> str:
+    from docx import Document
 
-    # Very basic dummy extraction logic
-    cgpa = 0.0
-    cgpa_match = re.search(r"cgpa[:\s]*([0-9]+\.[0-9]+)", text_lower)
-    if cgpa_match:
-        try:
-            cgpa = float(cgpa_match.group(1))
-        except Exception:
-            pass
-
-    projects_count = text_lower.count("project") // 2
-    internships_count = text_lower.count("internship") // 2
-    certifications_count = text_lower.count("certification") // 2
-
-    skills = [
-        "python",
-        "java",
-        "c++",
-        "machine learning",
-        "react",
-        "sql",
-        "aws",
-        "docker",
-    ]
-    skills_list = [skill for skill in skills if skill in text_lower]
-
-    return {
-        "cgpa": cgpa,
-        "projects_count": projects_count,
-        "internships_count": internships_count,
-        "certifications_count": certifications_count,
-        "skills_list": skills_list,
-        "college_tier": "Tier 2",
-        "branch": "CSE",
-        "raw_text": text,
-    }
+    try:
+        doc = Document(io.BytesIO(content))
+    except Exception as exc:  # noqa: BLE001
+        raise ResumeParseError("The DOCX file could not be opened.") from exc
+    parts = [p.text for p in doc.paragraphs if p.text.strip()]
+    for table in doc.tables:
+        for row in table.rows:
+            parts.extend(c.text for c in row.cells if c.text.strip())
+    return "\n".join(parts)
 
 
-def parse_resume(file_path: str) -> dict:
-    if file_path.lower().endswith(".pdf"):
-        return parse_pdf(file_path)
-    elif file_path.lower().endswith(".docx"):
-        return parse_docx(file_path)
+def extract_text(filename: str, content: bytes) -> str:
+    """Return the plain text of an uploaded resume."""
+    if len(content) > MAX_BYTES:
+        raise ResumeParseError(f"File is larger than {MAX_BYTES // (1024 * 1024)} MB.")
+    name = (filename or "").lower()
+    if name.endswith(".pdf") or content[:5] == b"%PDF-":
+        text = _pdf_text(content)
+    elif name.endswith(".docx") or content[:2] == b"PK":
+        text = _docx_text(content)
+    elif name.endswith((".txt", ".md")):
+        text = content.decode("utf-8", errors="replace")
     else:
-        # Fallback text parsing if needed
-        with open(file_path, "r", encoding="utf-8") as f:
-            text = f.read()
-        return llm_extract_features(text)
+        raise ResumeParseError("Unsupported file type. Upload a PDF, DOCX or TXT file.")
+    text = re.sub(r"[ \t]+", " ", text).strip()
+    if len(text.split()) < 20:
+        raise ResumeParseError("No readable text was found. Scanned/image-only resumes are not supported.")
+    return text
+
+
+def looks_like_resume(text: str) -> bool:
+    low = text.lower()
+    return sum(1 for w in _RESUME_WORDS if w in low) >= 2

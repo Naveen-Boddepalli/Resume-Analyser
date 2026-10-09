@@ -1,229 +1,196 @@
-import os
-import uuid
-import json
-from typing import Optional, Any
-from fastapi import (
-    FastAPI,
-    File,
-    UploadFile,
-    Form,
-    BackgroundTasks,
-    HTTPException,
-    Security,
-    Request,
-    Depends,
-)
-from fastapi.security import APIKeyHeader
+"""EviMatch API: evidence-grounded, bias-audited resume screening.
+
+Design choices
+* Stateless: resumes are parsed in memory and never written to disk or a database.
+* Deterministic scoring; an LLM is optional and only rephrases the evidence.
+* Every response says what was redacted and which evidence supports the score.
+"""
+
+from __future__ import annotations
+
+import secrets
+from typing import Any
+
+import numpy as np
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Security, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from supabase import create_client, Client
+from fastapi.security import APIKeyHeader
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
-from parser import parse_resume
-from llm import evaluate_job_match
-from config import SUPABASE_URL, SUPABASE_KEY
+import config
+from engine import get_engine
+from llm import llm_narrative
+from parser import MAX_BYTES, ResumeParseError, extract_text, looks_like_resume
+from resumatch import VERSION
+from resumatch.fairness import NAMES, PROXIES, with_line, with_name
+from resumatch.model import DECISIONS
+from summary import build_summary
 
-app = FastAPI(title="AI Resume Screening & Job-Matching API")
-
-API_KEY = os.getenv("API_KEY", "test-secret-key-123")
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
-
-limiter = Limiter(key_func=get_remote_address)
+app = FastAPI(
+    title="EviMatch API",
+    version=VERSION,
+    description="Evidence-grounded, bias-audited resume-job matching. Decision support only.",
+)
+limiter = Limiter(key_func=get_remote_address, default_limits=[config.RATE_LIMIT])
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
-
-
-async def get_api_key(api_key: str = Security(api_key_header)):
-    if api_key != API_KEY:
-        raise HTTPException(status_code=403, detail="Invalid API Key")
-    return api_key
-
-
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=config.CORS_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-API-Key"],
 )
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+MIN_JD_WORDS = 25
 
 
-def update_job_status(job_id: str, status: str, result: Optional[dict] = None):
+async def require_key(key: str | None = Security(_api_key_header)) -> None:
+    if config.API_KEY and not (key and secrets.compare_digest(key, config.API_KEY)):
+        raise HTTPException(status_code=403, detail="Invalid or missing API key")
+
+
+def _read_resume(upload: UploadFile) -> tuple[str, list[str]]:
+    data = upload.file.read(MAX_BYTES + 1)
     try:
-        data: dict[str, Any] = {"status": status}
-        if result is not None:
-            data["result"] = result
-        supabase.table("jobs").update(data).eq("id", job_id).execute()
-    except Exception as e:
-        print(f"Failed to update job status in Supabase: {e}")
+        text = extract_text(upload.filename or "", data)
+    except ResumeParseError as exc:
+        raise HTTPException(status_code=422, detail=f"{upload.filename}: {exc}") from exc
+    warnings = (
+        [] if looks_like_resume(text) else ["The document does not look like a resume; results may be unreliable."]
+    )
+    return text, warnings
 
 
-def get_job(job_id: str) -> Optional[dict]:
-    try:
-        response = supabase.table("jobs").select("*").eq("id", job_id).execute()
-        if response.data:
-            job = response.data[0]
-            return {"status": job["status"], "result": job.get("result")}  # type: ignore
-        return None
-    except Exception as e:
-        print(f"Failed to fetch job from Supabase: {e}")
-        return None
+def _check_jd(jd: str) -> str:
+    jd = jd.strip()
+    if len(jd.split()) < MIN_JD_WORDS:
+        raise HTTPException(status_code=422, detail=f"Job description must have at least {MIN_JD_WORDS} words.")
+    return jd
 
 
-def process_resume(job_id: str, file_path: str, storage_path: str, job_description: str):
-    try:
-        update_job_status(job_id, "processing")
-
-        # 1. Parse resume
-        parsed_data = parse_resume(file_path)
-
-        # 2. Extract features
-        features = {
-            "cgpa": parsed_data.get("cgpa", 0.0),
-            "projects_count": parsed_data.get("projects_count", 0),
-            "internships_count": parsed_data.get("internships_count", 0),
-            "certifications_count": parsed_data.get("certifications_count", 0),
-            "skills": parsed_data.get("skills_list", []),
-            "college_tier": parsed_data.get("college_tier", "Tier 2"),
-            "branch": parsed_data.get("branch", "CSE"),
-        }
-
-        # 3. LLM Matching
-        llm_response_str = evaluate_job_match(features, job_description)
-        try:
-            llm_result = json.loads(llm_response_str)
-        except Exception as e:
-            print(f"Error parsing LLM response: {e}")
-            llm_result = {
-                "match_score": 0,
-                "decision": "Review",
-                "matching_skills": [],
-                "missing_skills": [],
-                "summary": "Failed to parse analysis."
-            }
-
-        # Assemble response
-        final_result = {
-            "features": features,
-            "match_score": llm_result.get("match_score", 0),
-            "decision": llm_result.get("decision", "Review"),
-            "matching_skills": llm_result.get("matching_skills", []),
-            "missing_skills": llm_result.get("missing_skills", []),
-            "summary": llm_result.get("summary", "")
-        }
-
-        update_job_status(job_id, "completed", final_result)
-
-    except Exception as e:
-        update_job_status(job_id, "failed", {"error": str(e)})
-    finally:
-        # Clean up local file
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        # Optionally, remove from Supabase Storage
-        try:
-            supabase.storage.from_("resumes").remove([storage_path])
-        except Exception as e:
-            print(f"Failed removing {storage_path} from Supabase: {e}")
+@app.get("/health")
+def health() -> dict[str, Any]:
+    return {"status": "ok", "version": VERSION}
 
 
-@app.post("/upload")
-@limiter.limit("50/day")
-async def upload_resume(
+@app.get("/model", dependencies=[Depends(require_key)])
+def model_card() -> dict[str, Any]:
+    eng = get_engine()
+    return {
+        "version": VERSION,
+        "embedder": eng.embedder.name,
+        "head": eng.model.kind,
+        "features": eng.model.feature_names,
+        "meta": eng.meta,
+        "intended_use": "Decision support for screening; a human must review every outcome.",
+        "limitations": [
+            "Trained on a public benchmark whose labels are noisy and undocumented.",
+            "Not validated for non-English resumes, non-technical roles at scale, or any legal compliance regime.",
+            "Rule-based redaction removes explicit identifiers only; proxy signals can remain (see /audit).",
+        ],
+    }
+
+
+@app.post("/analyze", dependencies=[Depends(require_key)])
+def analyze(
     request: Request,
-    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     job_description: str = Form(...),
-    api_key: str = Depends(get_api_key),
-):
-    job_id = str(uuid.uuid4())
-
-    file_path = f"temp_{job_id}_{file.filename}"
-    storage_path = f"{job_id}/{file.filename}"
-
-    content = await file.read()
-
-    # 1. Save locally for parser
-    with open(file_path, "wb") as buffer:
-        buffer.write(content)
-
-    # 2. Upload to Supabase Storage
-    try:
-        supabase.storage.from_("resumes").upload(
-            storage_path, content, file_options={"content-type": file.content_type}  # type: ignore
-        )
-    except Exception as e:
-        print(f"Failed to upload to Supabase storage: {e}")
-
-    # 3. Create job in Supabase database
-    try:
-        supabase.table("jobs").insert(
-            {"id": job_id, "status": "pending", "result": None}
-        ).execute()
-    except Exception as e:
-        if os.path.exists(file_path):
-            os.remove(file_path)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to insert job into DB: {str(e)}"
-        )
-
-    background_tasks.add_task(process_resume, job_id, file_path, storage_path, job_description)
-
-    return {"job_id": job_id, "status": "pending"}
+    redact: bool = Form(True),
+) -> dict[str, Any]:
+    jd = _check_jd(job_description)
+    text, warnings = _read_resume(file)
+    result = get_engine().analyze(text, jd, do_redact=redact)
+    result["summary"] = build_summary(result)
+    narrative = llm_narrative(result)
+    if narrative:
+        result["narrative"] = narrative
+    if not redact:
+        warnings.append("Redaction is disabled: names and other identity cues were visible to the scorer.")
+    result["warnings"] = warnings
+    result["filename"] = file.filename
+    return result
 
 
-@app.get("/result/{job_id}")
-@limiter.limit("60/minute")
-async def get_result(
-    request: Request, job_id: str, api_key: str = Depends(get_api_key)
-):
-    job = get_job(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    return job
+@app.post("/rank", dependencies=[Depends(require_key)])
+def rank(
+    request: Request,
+    files: list[UploadFile] = File(...),
+    job_description: str = Form(...),
+    redact: bool = Form(True),
+) -> dict[str, Any]:
+    if len(files) > config.MAX_RANK_FILES:
+        raise HTTPException(status_code=422, detail=f"At most {config.MAX_RANK_FILES} resumes per request.")
+    jd = _check_jd(job_description)
+    texts: list[str] = []
+    names: list[str] = []
+    errors: list[dict[str, str]] = []
+    for f in files:
+        try:
+            text, _ = _read_resume(f)
+        except HTTPException as exc:
+            errors.append({"filename": f.filename or "?", "error": str(exc.detail)})
+            continue
+        texts.append(text)
+        names.append(f.filename or f"resume-{len(names) + 1}")
+    ranked: list[dict[str, Any]] = []
+    if texts:
+        for rec in get_engine().rank(texts, jd, do_redact=redact):
+            rec["filename"] = names[rec.pop("index")]
+            ranked.append(rec)
+        ranked.sort(key=lambda r: -r["fit_score"])
+    return {"candidates": ranked, "errors": errors, "redaction_applied": redact}
 
 
-class DemoRequest(BaseModel):
-    job_description: str
-    cgpa: float
-    projects_count: int
-    internships_count: int
-    certifications_count: int
-    skills_list: list[str]
-    college_tier: str
-    branch: str
-
-
-@app.post("/demo")
-@limiter.limit("20/day")
-async def demo_endpoint(
-    request: Request, demo_req: DemoRequest, api_key: str = Depends(get_api_key)
-):
-    features = demo_req.model_dump()
-    job_desc = features.pop("job_description")
-
-    llm_response_str = evaluate_job_match(features, job_desc)
-    try:
-        llm_result = json.loads(llm_response_str)
-    except Exception as e:
-        print(f"Error parsing LLM response: {e}")
-        llm_result = {
-            "match_score": 50,
-            "decision": "Review",
-            "matching_skills": [],
-            "missing_skills": [],
-            "summary": "Failed to analyze resume via LLM."
+@app.post("/audit", dependencies=[Depends(require_key)])
+def audit(
+    request: Request,
+    file: UploadFile = File(...),
+    job_description: str = Form(...),
+    redact: bool = Form(True),
+) -> dict[str, Any]:
+    """Counterfactual check: how much does the score move if only an irrelevant cue changes?"""
+    jd = _check_jd(job_description)
+    text, _ = _read_resume(file)
+    variants: list[str] = [text]
+    cell_idx: dict[str, list[int]] = {}
+    for cell, names in NAMES.items():
+        for nm in names[:2]:
+            cell_idx.setdefault(cell, []).append(len(variants))
+            variants.append(with_name(text, nm))
+    proxy_idx: list[tuple[str, str, int, int]] = []
+    for family, lines in PROXIES.items():
+        ctrl_idx = len(variants)
+        variants.append(with_line(text, lines["control"]))
+        for key, line in lines.items():
+            if key == "control":
+                continue
+            proxy_idx.append((family, key, len(variants), ctrl_idx))
+            variants.append(with_line(text, line))
+    scores, decisions = get_engine().score_texts(variants, jd, do_redact=redact)
+    cells = {c: float(np.mean(scores[i])) for c, i in cell_idx.items()}
+    spread = max(cells.values()) - min(cells.values())
+    proxies = [
+        {
+            "cue": f"{fam}:{key}",
+            "reference": f"{fam}:control",
+            "score_change": round(float(scores[i] - scores[j]), 2),
+            "decision_changed": bool(decisions[i] != decisions[j]),
         }
-
+        for fam, key, i, j in proxy_idx
+    ]
     return {
-        "features": features,
-        "match_score": llm_result.get("match_score", 0),
-        "decision": llm_result.get("decision", "Review"),
-        "matching_skills": llm_result.get("matching_skills", []),
-        "missing_skills": llm_result.get("missing_skills", []),
-        "summary": llm_result.get("summary", "")
+        "redaction_applied": redact,
+        "baseline_score": round(float(scores[0]), 1),
+        "name_cell_scores": {c: round(v, 2) for c, v in cells.items()},
+        "name_spread": round(spread, 2),
+        "proxy_cues": proxies,
+        "decision_at_baseline": DECISIONS[int(decisions[0])],
+        "interpretation": (
+            "A spread of 0 across name groups is expected when redaction is on; non-zero proxy changes show "
+            "residual sensitivity that redaction does not remove."
+        ),
     }

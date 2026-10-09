@@ -29,7 +29,11 @@ def audit_system(train, sample, embedder, do_redact: bool) -> dict:
     built = build_features(train, {"train": train}, embedder, do_redact=do_redact)
     cols = [ALL_FEATURES.index(n) for n in FEATURE_NAMES]
     model, rep = select_model(
-        built.X["train"][:, cols], train["y"].to_numpy(), train["jid"].to_numpy(), list(FEATURE_NAMES), kinds=("logreg",)
+        built.X["train"][:, cols],
+        train["y"].to_numpy(),
+        train["jid"].to_numpy(),
+        list(FEATURE_NAMES),
+        kinds=("logreg",),
     )
     jd_texts = sample["job_description_text"].tolist()
     pj = prepare_jobs(jd_texts, embedder, built.lexicon)
@@ -74,7 +78,9 @@ def audit_system(train, sample, embedder, do_redact: bool) -> dict:
         "model": rep["chosen"],
         "n_pairs": int(len(sample)),
         "n_jds": int(sample["jid"].nunique()),
-        "name_cell_mean_score": {k.split(":", 1)[1]: float(v.mean()) for k, v in scores.items() if k.startswith("names:")},
+        "name_cell_mean_score": {
+            k.split(":", 1)[1]: float(v.mean()) for k, v in scores.items() if k.startswith("names:")
+        },
         "name_gap": name_gap(scores, groups),
         "max_abs_name_variation_per_pair": float(
             np.max(np.ptp(np.stack([v for k, v in scores.items() if k.startswith("names:")]), axis=0))
@@ -92,8 +98,12 @@ def audit_system(train, sample, embedder, do_redact: bool) -> dict:
         ],
         "paired_tests": {
             "white_male_vs_black_male_p": permutation_pvalue(scores["names:white_male"], scores["names:black_male"]),
-            "white_male_vs_black_female_p": permutation_pvalue(scores["names:white_male"], scores["names:black_female"]),
-            "hobbies_female_vs_male_coded_p": permutation_pvalue(scores["hobbies:female_coded"], scores["hobbies:male_coded"]),
+            "white_male_vs_black_female_p": permutation_pvalue(
+                scores["names:white_male"], scores["names:black_female"]
+            ),
+            "hobbies_female_vs_male_coded_p": permutation_pvalue(
+                scores["hobbies:female_coded"], scores["hobbies:male_coded"]
+            ),
         },
         "score_sd_original": float(scores["original"].std()),
     }
@@ -115,10 +125,14 @@ def main() -> None:
     save_json("bias_audit_local.json", res)
     for label, r in res.items():
         print(f"\n== {label}  max per-pair name variation = {r['max_abs_name_variation_per_pair']:.4f}")
-        print("name gap:", {k: round(v, 3) for k, v in r["name_gap"].items() if k == "max_pairwise_gap" or "black" in k})
+        print(
+            "name gap:", {k: round(v, 3) for k, v in r["name_gap"].items() if k == "max_pairwise_gap" or "black" in k}
+        )
         for row in r["proxy_rows"]:
             lo, hi = row["ci95"]
-            print(f"  {row['condition']:32s} d={row['mean_delta']:+.3f} [{lo:+.3f},{hi:+.3f}] flips={row['decision_flip_rate']:.3f}")
+            print(
+                f"  {row['condition']:32s} d={row['mean_delta']:+.3f} [{lo:+.3f},{hi:+.3f}] flips={row['decision_flip_rate']:.3f}"
+            )
 
 
 if __name__ == "__main__":

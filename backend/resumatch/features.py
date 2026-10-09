@@ -76,7 +76,10 @@ class CorpusStats:
 
     @classmethod
     def fit(cls, resumes: list[str], jds: list[str], lexicon: SkillLexicon) -> "CorpusStats":
-        tfidf = TfidfVectorizer(stop_words="english", sublinear_tf=True, min_df=2, max_df=0.9)
+        small = len(resumes) + len(jds) < 10  # tiny corpora (demos, tests): keep every term
+        tfidf = TfidfVectorizer(
+            stop_words="english", sublinear_tf=True, min_df=1 if small else 2, max_df=1.0 if small else 0.9
+        )
         tfidf.fit(list(resumes) + list(jds))
         n = len(resumes)
         df: dict[str, int] = {}

@@ -131,6 +131,37 @@ class EviMatch:
             "model": {"version": VERSION, "embedder": self.embedder.name, **self.meta},
         }
 
+    # ---- batch helpers used by the service and the audit ----------------------------------
+    def _batch(
+        self, resumes: list[str], jd_text: str, do_redact: bool
+    ) -> tuple[np.ndarray, np.ndarray, list[PairAnalysis]]:
+        prepared = prepare_resumes(resumes, self.embedder, self.lexicon, do_redact=do_redact, as_of=self.as_of)
+        job = prepare_jobs([jd_text], self.embedder, self.lexicon)[0]
+        feats = [self.features_for(r, job) for r in prepared]
+        X = np.stack([x for x, _ in feats])
+        return self.model.score(X), self.model.decide(self.model.predict_proba(X)), [a for _, a in feats]
+
+    def score_texts(self, resumes: list[str], jd_text: str, *, do_redact: bool = True) -> tuple[np.ndarray, np.ndarray]:
+        """Fit scores (0-100) and decision indices for many resume texts and one JD."""
+        scores, decisions, _ = self._batch(resumes, jd_text, do_redact)
+        return scores, decisions
+
+    def rank(self, resumes: list[str], jd_text: str, *, do_redact: bool = True) -> list[dict[str, Any]]:
+        """Compact per-candidate records for one JD, in input order."""
+        scores, decisions, analyses = self._batch(resumes, jd_text, do_redact)
+        return [
+            {
+                "index": i,
+                "fit_score": round(float(s), 1),
+                "decision": DECISIONS[int(d)],
+                "requirements_met": sum(1 for m in a.matches if m.similarity >= COVER_STRONG),
+                "requirements_total": len(a.matches),
+                "matching_skills": len(a.matched_skills),
+                "missing_skills": len(a.missing_skills),
+            }
+            for i, (s, d, a) in enumerate(zip(scores, decisions, analyses))
+        ]
+
     # ---- persistence -------------------------------------------------------------------------
     def save(self, path: str | Path = DEFAULT_ARTIFACT) -> None:
         path = Path(path)

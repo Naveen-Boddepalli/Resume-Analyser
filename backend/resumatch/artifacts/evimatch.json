@@ -1,0 +1,113 @@
+{
+ "meta": {
+  "trained_on": "cnamuangtoun/resume-job-description-fit (train+test, 8,000 pairs)",
+  "head": "gbm",
+  "head_params": {
+   "max_depth": 2,
+   "max_iter": 200
+  },
+  "cv_macro_f1_jd_grouped_optimistic": 0.4997,
+  "expected_performance": "see paper/results: doubly-disjoint macro-F1 about 0.47 (95% CI in research/results/main_S2.json)",
+  "vocabulary_terms": 350
+ },
+ "cv": [
+  {
+   "kind": "logreg",
+   "params": {
+    "C": 0.003
+   },
+   "mean": 0.48498684563178085,
+   "se": 0.01158276817893878
+  },
+  {
+   "kind": "logreg",
+   "params": {
+    "C": 0.01
+   },
+   "mean": 0.4856343169618668,
+   "se": 0.011794867119145014
+  },
+  {
+   "kind": "logreg",
+   "params": {
+    "C": 0.03
+   },
+   "mean": 0.4815510051689274,
+   "se": 0.011517134122228646
+  },
+  {
+   "kind": "logreg",
+   "params": {
+    "C": 0.1
+   },
+   "mean": 0.4776341426774328,
+   "se": 0.010772093217915056
+  },
+  {
+   "kind": "logreg",
+   "params": {
+    "C": 0.3
+   },
+   "mean": 0.4771651356351952,
+   "se": 0.0103681560133186
+  },
+  {
+   "kind": "logreg",
+   "params": {
+    "C": 1.0
+   },
+   "mean": 0.4758310747938954,
+   "se": 0.010744199168828331
+  },
+  {
+   "kind": "gbm",
+   "params": {
+    "max_depth": 2,
+    "max_iter": 100
+   },
+   "mean": 0.491196537924184,
+   "se": 0.004417382740258615
+  },
+  {
+   "kind": "gbm",
+   "params": {
+    "max_depth": 2,
+    "max_iter": 200
+   },
+   "mean": 0.4996505317799172,
+   "se": 0.006698010042966317
+  },
+  {
+   "kind": "gbm",
+   "params": {
+    "max_depth": 3,
+    "max_iter": 100
+   },
+   "mean": 0.4948990358453176,
+   "se": 0.006473568604872494
+  },
+  {
+   "kind": "gbm",
+   "params": {
+    "max_depth": 3,
+    "max_iter": 200
+   },
+   "mean": 0.4986028340405115,
+   "se": 0.005758872814505531
+  }
+ ],
+ "provenance": {
+  "git_commit": "c27908ec4afa564415a02f6c8eabbdfd79ecc4c1",
+  "git_dirty": true,
+  "python": "3.12.9",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.4.6",
+  "pandas": "3.0.3",
+  "sklearn": "1.9.0",
+  "torch": "2.14.1",
+  "seed": 13,
+  "as_of": "2024-07-01"
+ },
+ "reference_date_used_in_experiments": "2024-07-01"
+}

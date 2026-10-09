@@ -105,7 +105,10 @@ def main(split: str) -> None:
         }
         if name != "full":
             rec["delta_macro_f1_vs_full"] = paired_bootstrap_diff(
-                test, lambda idx, p=p: macro_f1(y[idx], p[idx]), lambda idx: macro_f1(y[idx], full_pred[idx]), n_boot=1000
+                test,
+                lambda idx, p=p: macro_f1(y[idx], p[idx]),
+                lambda idx: macro_f1(y[idx], full_pred[idx]),
+                n_boot=1000,
             )
             d = (rank - rank_full).dropna().to_numpy()
             rng = np.random.default_rng(SEED)

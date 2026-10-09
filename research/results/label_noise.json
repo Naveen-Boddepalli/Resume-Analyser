@@ -1,0 +1,51 @@
+{
+ "provenance": {
+  "git_commit": "c27908ec4afa564415a02f6c8eabbdfd79ecc4c1",
+  "git_dirty": true,
+  "python": "3.12.9",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "machine": "arm64",
+  "numpy": "2.4.6",
+  "pandas": "3.0.3",
+  "sklearn": "1.9.0",
+  "torch": "2.14.1",
+  "seed": 13,
+  "as_of": "2024-07-01"
+ },
+ "train": {
+  "n_pairs": 6241,
+  "eta2_jid": 0.2603224733582605,
+  "eta2_jid_null_mean": 0.04466586790447545,
+  "n_jid": 280,
+  "eta2_rid": 0.18719467527889758,
+  "eta2_rid_null_mean": 0.10319634593466814,
+  "n_rid": 642
+ },
+ "test": {
+  "n_pairs": 1759,
+  "eta2_jid": 0.2981111667451572,
+  "eta2_jid_null_mean": 0.04118586376068544,
+  "n_jid": 71,
+  "eta2_rid": 0.31186913963657703,
+  "eta2_rid_null_mean": 0.2694538934024404,
+  "n_rid": 477
+ },
+ "pooled": {
+  "n_pairs": 8000,
+  "eta2_jid": 0.2688983096986693,
+  "eta2_jid_null_mean": 0.0439382109493301,
+  "n_jid": 351,
+  "eta2_rid": 0.17764756850243538,
+  "eta2_rid_null_mean": 0.08022778241934411,
+  "n_rid": 643
+ },
+ "duplicate_pairs_train": {
+  "groups": 7,
+  "rows": 14,
+  "groups_with_conflicting_labels": 6
+ },
+ "resume_overlap": {
+  "test_resumes_seen_in_train": 0.9994314951677089,
+  "test_jds_seen_in_train": 0.0
+ }
+}

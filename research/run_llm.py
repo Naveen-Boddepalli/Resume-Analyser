@@ -153,7 +153,9 @@ def main(mode: str) -> None:
     sub = baseline(test)
     ok = sub["llm_fit"] >= 0
     print(f"baseline: {int(ok.sum())}/{len(sub)} parsed in {time.time() - t0:.0f}s", flush=True)
-    sub.drop(columns=["resume_text", "job_description_text"]).to_csv(CACHE.parent / "results" / "llm_baseline_predictions.csv", index=False)
+    sub.drop(columns=["resume_text", "job_description_text"]).to_csv(
+        CACHE.parent / "results" / "llm_baseline_predictions.csv", index=False
+    )
     if mode == "baseline":
         return
 
@@ -177,7 +179,14 @@ def main(mode: str) -> None:
         index.append(("repeat", i))
     print(f"audit: {len(jobs)} calls", flush=True)
     res = run_many(jobs)
-    table = pd.DataFrame({"condition": [c for c, _ in index], "i": [i for _, i in index], "fit": [r["fit"] for r in res], "score": [r["score"] for r in res]})
+    table = pd.DataFrame(
+        {
+            "condition": [c for c, _ in index],
+            "i": [i for _, i in index],
+            "fit": [r["fit"] for r in res],
+            "score": [r["score"] for r in res],
+        }
+    )
     table.to_csv(CACHE.parent / "results" / "llm_audit_raw.csv", index=False)
     payload = {"model_requested": MODEL, "n_pairs": int(len(audit)), "n_calls": int(len(jobs))}
     save_json("llm_audit_meta.json", payload)
