@@ -110,3 +110,10 @@ in the exploration table) was scored on `test.csv`.
    broken with a seeded random permutation.
 4. *Baseline text.* B1-B4 and B6 see raw (un-redacted) text, as typical practice;
    EviMatch systems see redacted text. The cost of redaction is isolated in E3.
+5. *LLM baseline (B5) and LLM bias audit not run.* The Mistral key in `backend/.env`
+   answers every request with HTTP 429 and `x-ratelimit-limit-req-minute: 0`, i.e. the
+   account has no request quota. No workaround (other keys or providers) was attempted.
+   The harness (`research/run_llm.py`) is complete and cached, so the experiment can be
+   run once quota is restored. All claims about LLM bias in the paper therefore rest on
+   cited literature, not on our own measurement.
+
