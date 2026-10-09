@@ -26,7 +26,7 @@ _PERSONAL_FIELD = re.compile(
 )
 _HONORIFIC = re.compile(r"\b(?:Mr|Mrs|Ms|Miss|Mx|Dr|Shri|Smt|Sri)\.?(?=\s+[A-Z])")
 _NAME_LABEL = re.compile(r"\b(?:Full\s+)?Name\s*[:\-]\s*([A-Z][\w'.-]+(?:\s+[A-Z][\w'.-]+){0,3})")
-_HEADER_NAME = re.compile(r"^\s*([A-Z][\w'.-]+(?:\s+[A-Z][\w'.-]+){1,3})\s*(?:\n|$|[|,•])")
+_HEADER_NAME = re.compile(r"^\s*([A-Z][\w'.-]+(?:[ \t]+[A-Z][\w'.-]+){1,3})[ \t]*(?:\n|$|[|,\u2022])")
 _NOT_NAME = frozenset(
     "resume curriculum vitae cv summary profile objective experience education skills "
     "contact professional career personal details".split()
@@ -95,6 +95,17 @@ class RedactionReport:
         return sum(self.counts.values())
 
 
+def _looks_like_name(candidate: str) -> bool:
+    """Reject section headers and job titles (including headers glued to the next word)."""
+    for tok in candidate.split():
+        low = tok.lower().strip(".,'-")
+        if low in _NOT_NAME or low.startswith(tuple(_NOT_NAME)) or len(tok) > 18:
+            return False
+        if sum(c.isupper() for c in tok) > 2 or any(c.isdigit() for c in tok):
+            return False
+    return True
+
+
 def _sub_count(pattern: re.Pattern[str], repl: str, text: str, kind: str, rep: RedactionReport) -> str:
     text, n = pattern.subn(repl, text)
     rep.add(kind, n)
@@ -129,7 +140,7 @@ def redact(
 
     # Header name: first line that looks like a person name.
     m = _HEADER_NAME.match(text)
-    if m and not any(tok.lower() in _NOT_NAME for tok in m.group(1).split()):
+    if m and _looks_like_name(m.group(1)):
         text = "[NAME]" + text[m.end(1) :]
         rep.add("name")
     text, n = _NAME_LABEL.subn("Name: [NAME]", text)

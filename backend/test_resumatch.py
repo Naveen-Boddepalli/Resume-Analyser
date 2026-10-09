@@ -159,3 +159,27 @@ def test_redaction_makes_explicit_name_cues_score_invariant():
     base = sys_.analyze(PY_RESUME, BACKEND_JD)["fit_score"]
     swapped = sys_.analyze(PY_RESUME.replace("Alex Morgan", "Lakisha Washington"), BACKEND_JD)["fit_score"]
     assert base == swapped
+
+
+def test_header_name_is_redacted_even_when_a_section_header_follows():
+    text = "Lakisha Washington\nProfessional SummaryProactive analyst with 5 years of experience in reporting."
+    out, rep = redact(text)
+    assert out.startswith("[NAME]") and "Lakisha" not in out
+    assert rep.counts["name"] == 1
+
+
+def test_redacted_text_is_identical_for_every_audit_name():
+    from resumatch.fairness import NAMES, with_name
+
+    base = "Professional SummaryProactive analyst with 5 years of experience in reporting and SQL."
+    outs = {redact(with_name(base, n))[0] for names in NAMES.values() for n in names}
+    assert len(outs) == 1
+
+
+def test_section_headers_glued_to_titles_are_not_mistaken_for_names():
+    for text in (
+        "SummaryService-oriented Human Resource Generalist, working toward my degree.",
+        "ExperienceElectrical Engineer,11/2017 to Current General Electric.",
+        "ProfileLogical Data Analyst, skilled in eliciting requirements.",
+    ):
+        assert redact(text)[1].counts.get("name", 0) == 0

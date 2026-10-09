@@ -116,4 +116,13 @@ in the exploration table) was scored on `test.csv`.
    The harness (`research/run_llm.py`) is complete and cached, so the experiment can be
    run once quota is restored. All claims about LLM bias in the paper therefore rest on
    cited literature, not on our own measurement.
+6. *Redactor defect found by the bias audit, fixed, experiments re-run.* The first audit
+   showed up to 1.46 score points of name-dependence with redaction on. Cause: the header
+   name pattern allowed whitespace to span a newline, so "Name\nProfessional Summary..."
+   was matched as one four-token string and rejected by the section-header stop list,
+   leaving the name in place. The same pattern also treated 7 of 643 benchmark resumes that
+   begin with a glued header ("SummaryService-oriented ...") as names. Fix: the name must
+   sit on one line and may not contain header words, digits or camel-case tokens. Because
+   the shipped redactor must equal the evaluated one, E1-E7 and the artefact were re-run
+   after the fix; the first-run outputs remain in git history (commit 0ac0238).
 
