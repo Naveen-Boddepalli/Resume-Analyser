@@ -80,3 +80,4 @@ paper/*.log
 paper/*.bbl
 paper/*.blg
 paper/*.out
+research/results/*DEV*

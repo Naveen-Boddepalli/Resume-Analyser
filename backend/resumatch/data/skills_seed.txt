@@ -1,0 +1,383 @@
+# EviMatch seed skill lexicon.
+# Format: canonical: alias; alias; ...   (matching is case-insensitive, punctuation-normalised)
+# Hand-curated for this project (no third-party taxonomy is redistributed). It is deliberately
+# small and transparent; coverage limits are discussed in the paper. Domain vocabulary that is
+# missing here can be induced from training resumes (see resumatch.skills.induce_vocabulary).
+
+## programming
+python: python3; python 3
+java: core java; java se; j2ee; java ee; jdk
+javascript: js; ecmascript; es6
+typescript: ts
+c++: cpp; c plus plus
+c#: csharp; c sharp
+c programming: embedded c; ansi c
+golang: go lang; go programming
+rust
+ruby
+php
+swift
+kotlin
+scala
+perl
+matlab
+r programming: r language; rstudio; r studio
+sql
+t-sql: tsql; transact-sql; transact sql
+pl/sql: plsql; pl sql
+bash: shell scripting; shell script; unix shell; ksh
+powershell
+vba: excel vba; visual basic for applications
+html: html5
+css: css3
+objective-c
+dart
+lua
+groovy
+cobol
+fortran
+assembly language: assembly
+vb.net: visual basic; vb
+abap
+julia
+haskell
+
+## web
+react: react.js; reactjs; react js
+angular: angularjs; angular.js; angular 2
+vue: vue.js; vuejs
+next.js: nextjs
+node.js: nodejs; node js
+express.js: expressjs; express
+django
+flask
+fastapi
+spring boot: springboot; spring framework; spring mvc; spring
+.net: dotnet; .net framework; .net core; asp.net; asp.net mvc
+hibernate
+jquery
+bootstrap
+tailwind css: tailwind
+laravel
+ruby on rails: rails
+redux
+graphql
+rest api: rest apis; restful; restful api; restful apis; rest services; web services; rest
+soap
+json
+xml
+ajax
+webpack
+responsive design
+web development: web application development
+full stack: full-stack; fullstack
+front end: front-end; frontend
+back end: back-end; backend
+microservices: micro services; microservice architecture
+
+## data and ml
+machine learning: ml
+deep learning
+natural language processing: nlp
+computer vision
+tensorflow
+pytorch
+keras
+scikit-learn: sklearn; scikit learn
+pandas
+numpy
+scipy
+apache spark: spark; pyspark
+hadoop: hdfs; mapreduce
+hive
+apache kafka: kafka
+airflow: apache airflow
+dbt
+etl: extract transform load; elt
+data warehouse: data warehousing; dwh; edw
+data modeling: data modelling; dimensional modeling; star schema; star-schemas
+data mining
+data visualization: data visualisation; dashboards; dashboarding
+tableau
+power bi: powerbi; microsoft power bi
+looker
+qlik: qlikview; qlik sense
+excel: microsoft excel; ms excel; advanced excel; pivot tables; vlookup
+statistics: statistical analysis; statistical modeling
+a/b testing: ab testing; experimentation
+regression
+time series
+forecasting
+data analysis: data analytics; analytics
+business intelligence: bi reporting
+ssis: sql server integration services
+ssrs: sql server reporting services; reporting services
+ssas: sql server analysis services; analysis services
+informatica: informatica powercenter
+talend
+snowflake
+redshift: amazon redshift
+bigquery: google bigquery
+databricks
+mlops
+large language models: llm; llms; generative ai; genai; gpt
+sas
+spss
+stata
+data engineering: data pipelines; data pipeline
+data governance
+data quality
+big data
+
+## databases
+mysql
+postgresql: postgres
+mongodb: mongo
+oracle database: oracle db; oracle 11g; oracle 12c; oracle
+sql server: ms sql server; microsoft sql server; mssql
+sqlite
+redis
+cassandra
+dynamodb
+elasticsearch: elastic search; elk
+neo4j
+db2
+teradata
+netezza
+ms access: microsoft access
+nosql
+
+## cloud and devops
+aws: amazon web services; ec2; s3; amazon aws
+azure: microsoft azure; azure data factory; azure devops
+gcp: google cloud; google cloud platform
+docker: containerization; containers
+kubernetes: k8s
+terraform
+ansible
+jenkins
+ci/cd: cicd; continuous integration; continuous delivery; continuous deployment
+git
+github
+gitlab
+bitbucket
+linux
+unix
+windows server
+tcp/ip: networking; network administration
+vmware
+devops
+serverless: aws lambda; lambda functions
+cloudformation
+helm
+prometheus
+grafana
+splunk
+monitoring: application monitoring
+infrastructure as code: iac
+
+## security
+cybersecurity: information security; infosec; cyber security
+penetration testing: pentesting; ethical hacking
+siem
+firewall: firewalls
+vpn
+cisco
+ccna
+itil
+iso 27001
+nist
+soc 2
+hipaa
+gdpr
+pci dss: pci-dss
+identity and access management: iam; active directory
+
+## quality and delivery
+manual testing
+test automation: automation testing; automated testing
+selenium
+unit testing: junit; pytest; test-driven development; tdd
+test cases: test plans; test scripts
+jira
+confluence
+agile: agile methodology; agile methodologies
+scrum
+kanban
+waterfall
+sdlc: software development life cycle; software development lifecycle
+project management
+pmp
+prince2
+six sigma
+lean: lean manufacturing
+product management
+stakeholder management
+requirements gathering: requirements analysis; business requirements; requirements elicitation
+business analysis: business analyst
+user acceptance testing: uat
+root cause analysis: rca
+process improvement: process optimization; continuous improvement
+risk management
+change management
+vendor management
+quality assurance: qa; quality control
+
+## business applications
+salesforce
+sap
+sap hana
+oracle erp: oracle ebs; oracle applications; oracle financials
+peoplesoft
+workday
+servicenow
+microsoft dynamics: dynamics 365; dynamics crm
+netsuite
+quickbooks
+sharepoint
+microsoft office: ms office; office 365; microsoft office suite
+powerpoint: microsoft powerpoint
+ms word: microsoft word
+outlook: microsoft outlook
+erp: enterprise resource planning
+crm: customer relationship management
+
+## finance and accounting
+accounting: general accounting
+financial reporting: financial statements
+financial analysis
+financial modeling: financial modelling
+budgeting: budget preparation; budget management
+accounts payable: a/p; ap
+accounts receivable: a/r; ar
+general ledger: gl
+reconciliation: account reconciliation; bank reconciliation; reconciliations
+payroll: payroll processing
+bookkeeping
+auditing: internal audit; external audit; audit
+gaap: us gaap; u.s. gaap
+ifrs
+tax preparation: tax returns; tax filing
+taxation: tax compliance; tax planning
+sarbanes-oxley: sox
+cpa
+month-end close: month end close; month-end; period close
+variance analysis
+cost accounting
+treasury
+credit analysis
+underwriting
+kyc: know your customer
+aml: anti-money laundering
+investment banking
+portfolio management
+invoicing: invoice processing; billing
+collections
+expense reports
+compliance: regulatory compliance
+
+## human resources and administration
+recruiting: recruitment; talent acquisition; sourcing candidates
+onboarding
+employee relations
+hris
+benefits administration
+performance management
+training and development
+data entry
+customer service: customer support; client services
+call center: contact center
+calendar management: scheduling; schedule management
+office administration: office management; administrative support
+travel arrangements
+record keeping: records management; filing
+event planning
+document management
+
+## sales and marketing
+sales: sales experience
+b2b sales
+lead generation
+account management: client relationship management
+negotiation
+cold calling
+seo: search engine optimization
+sem: search engine marketing
+google analytics
+google ads: adwords
+social media: social media marketing
+content marketing
+email marketing
+marketing automation: hubspot; marketo
+brand management
+market research
+copywriting
+retail: retail sales
+merchandising
+inventory management: inventory control
+supply chain: supply chain management; logistics
+procurement: purchasing; sourcing
+vendor relations
+
+## healthcare
+patient care
+electronic health records: ehr; emr; epic
+icd-10: icd 10
+medical coding: cpt coding; cpt
+medical billing
+nursing: registered nurse; rn
+cpr: bls; acls; basic life support
+phlebotomy
+pharmacy: pharmacist; pharmacy technician
+clinical research: clinical trials
+medical terminology
+audiology: hearing instrument
+
+## engineering
+autocad
+solidworks
+catia
+plc: programmable logic controller; plc programming
+scada
+circuit design
+pcb design: printed circuit board
+embedded systems: embedded software; firmware
+rtos
+fpga
+vhdl
+verilog
+labview
+hvac
+cad: computer-aided design
+gd&t
+iso 9001
+maintenance: preventive maintenance
+troubleshooting: debugging; diagnostics
+electrical wiring: wiring; wire harness; harnesses
+high voltage: high-voltage
+nfpa 70e
+schematics: electrical schematics; wiring diagrams
+structural analysis
+civil engineering
+mechanical engineering
+electrical engineering
+manufacturing
+robotics
+control systems
+signal processing
+power electronics
+
+## professional (transferable)
+communication: communication skills; verbal communication; written communication
+leadership: team leadership; team lead
+teamwork: team player; collaboration; collaborative
+problem solving: problem-solving
+analytical skills: analytical thinking; analytical
+time management
+mentoring: coaching; training junior
+presentation skills: presentations
+critical thinking
+attention to detail: detail oriented; detail-oriented
+organizational skills: organization skills
+multitasking
+decision making
