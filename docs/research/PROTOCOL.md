@@ -95,4 +95,18 @@ Ablations remove one feature group at a time from M3.
 
 ## Deviation log
 
-(none yet)
+All entries below were made **before** any model (other than the TF-IDF diagnostic
+in the exploration table) was scored on `test.csv`.
+
+1. *DEV split.* A development split (20% of training JDs, seed 13) was added so the
+   pipeline could be debugged without touching `test.csv`. Dev results are not reported.
+2. *Identity-like features.* Grouped CV inside the training set gave macro-F1 about 0.51
+   while the dev split gave 0.42-0.47. The CV folds share resumes, and resume-only
+   attributes (years of experience, education level, skill count) let a model memorise
+   resume-level base rates. These seven features are now excluded from the model and
+   reported separately (systems X1/X2) to quantify the leak.
+3. *Tie-breaking.* Ranking metrics originally broke score ties by file order, which is
+   not random in the benchmark (a constant scorer reached nDCG@10 = 0.21). Ties are now
+   broken with a seeded random permutation.
+4. *Baseline text.* B1-B4 and B6 see raw (un-redacted) text, as typical practice;
+   EviMatch systems see redacted text. The cost of redaction is isolated in E3.
