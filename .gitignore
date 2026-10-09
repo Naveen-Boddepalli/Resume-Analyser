@@ -71,3 +71,12 @@ venv.bak/
 # data/
 # models/*.pkl
 catboost_info/
+
+# Research data and generated artefacts
+data/raw/
+research/cache/
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
