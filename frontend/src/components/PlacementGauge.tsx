@@ -231,7 +231,7 @@ export function PlacementGauge({ value }: PlacementGaugeProps) {
           fontWeight="500"
           letterSpacing="0.02em"
         >
-          Placement Probability
+          Match Score
         </text>
       </svg>
 

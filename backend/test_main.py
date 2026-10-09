@@ -6,13 +6,7 @@ HEADERS = {"X-API-Key": "test-secret-key-123"}
 
 
 def test_app_title():
-    assert app.title == "AI Placement Readiness Platform API"
-
-
-def test_salary_distribution():
-    response = client.get("/salary-distribution", headers=HEADERS)
-    # Will be 200 if the CSV exists in data/, otherwise 500 as designed
-    assert response.status_code in [200, 500]
+    assert app.title == "AI Resume Screening & Job-Matching API"
 
 
 def test_get_result_not_found():
@@ -21,15 +15,10 @@ def test_get_result_not_found():
     assert response.json() == {"detail": "Job not found"}
 
 
-def test_get_report_not_found():
-    response = client.get("/report/non-existent-job-123", headers=HEADERS)
-    assert response.status_code == 404
-    assert response.json() == {"detail": "Job not found"}
-
-
 def test_demo_endpoint_validation_error():
     # Missing required 'cgpa' field
     payload = {
+        "job_description": "We are looking for a software engineer with Python experience.",
         "projects_count": 2,
         "internships_count": 1,
         "certifications_count": 1,
@@ -43,6 +32,7 @@ def test_demo_endpoint_validation_error():
 
 def test_demo_endpoint_success():
     payload = {
+        "job_description": "We are looking for a software engineer with Python experience.",
         "cgpa": 8.0,
         "projects_count": 2,
         "internships_count": 1,
@@ -55,6 +45,9 @@ def test_demo_endpoint_success():
     assert response.status_code == 200
     data = response.json()
     assert "features" in data
-    assert "analysis" in data
-    assert "roadmap" in data
+    assert "match_score" in data
+    assert "decision" in data
+    assert "matching_skills" in data
+    assert "missing_skills" in data
+    assert "summary" in data
     assert data["features"]["cgpa"] == 8.0

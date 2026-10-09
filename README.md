@@ -1,18 +1,13 @@
-# 🚀 AI Placement Readiness Platform
+# 🚀 AI-based Resume Screening & Job-Matching System
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi)
-![CatBoost](https://img.shields.io/badge/CatBoost-ML-yellow)
 ![Supabase](https://img.shields.io/badge/Supabase-DB-3ECF8E?logo=supabase)
 ![Mistral](https://img.shields.io/badge/Mistral-LLM-f55036)
 
-[![Backend CI/CD](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/backend-ci-cd.yml/badge.svg)](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/backend-ci-cd.yml)
-[![Frontend CI](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/frontend-ci.yml)
-[![Security Checks](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/security-ci.yml/badge.svg)](https://github.com/Naveen-Boddepalli/Resume-Analyser/actions/workflows/security-ci.yml)
+> **🔗 [Live Demo: Try the Platform Here!](https://resume-analyser-pink-rho.vercel.app/)**
 
-> **🔗 [Live Demo: Try the Resume Analyser Here!](https://resume-analyser-pink-rho.vercel.app/)**
-
-The **AI Placement Readiness Platform** is an intelligent, end-to-end tool designed to analyze student resumes and predict their campus placement outcomes. By combining Machine Learning, Natural Language Processing, and Large Language Models, the platform provides students with highly actionable insights to improve their career prospects.
+The **AI-based Resume Screening and Job-Matching System** is an intelligent tool designed to assist recruiters in finding the best candidates for their open roles. By combining Natural Language Processing and Large Language Models, the platform compares candidate resumes against specific Job Descriptions to provide match scores, skill gap analysis, and shortlisting recommendations.
 
 ---
 
@@ -27,7 +22,6 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 - [🧪 CI/CD & Testing Guidelines](#-cicd--testing-guidelines)
 - [📡 API Endpoints](#-api-endpoints)
 - [🤝 Contributing](#-contributing)
-- [🗺️ Roadmap](#-roadmap)
 - [📄 License](#-license)
 
 ---
@@ -35,10 +29,9 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 ## ✨ Key Features
 
 - **Resume Parsing Engine**: Robustly extracts key information (CGPA, skills, projects, internships) from PDF and DOCX resumes.
-- **Placement Probability Model**: Uses advanced gradient boosting (CatBoost/XGBoost) to classify placement success chances based on extracted features.
-- **Salary Range Predictor**: Employs Quantile Regression to forecast a realistic salary bracket (e.g., 7.8 – 10.2 LPA) rather than a single point estimate.
-- **Explainable AI (SHAP)**: Breaks down the ML prediction into human-readable *strengths* (positive contributors) and *weaknesses* (negative contributors).
-- **LLM-Powered Recommendations**: Generates highly tailored, specific, and actionable advice to improve placement odds using Mistral's high-speed inference.
+- **Job Match Scoring**: Calculates an intelligent Match Score based on how well the candidate's resume aligns with the provided Job Description.
+- **Skill Gap Analysis**: Automatically identifies which critical skills from the Job Description are present in the resume, and which are missing.
+- **LLM-Powered Recommendations**: Provides an AI-generated recruiter summary and a definitive screening decision (Shortlist, Review, Reject).
 - **Modern Dashboard**: A sleek, responsive Next.js frontend built with Tailwind CSS and `shadcn/ui` for an intuitive user experience.
 
 ---
@@ -51,16 +44,12 @@ The **AI Placement Readiness Platform** is an intelligent, end-to-end tool desig
 
 ### Backend
 - **Framework**: FastAPI (Python)
-- **Task Queue**: Built-in `BackgroundTasks` for asynchronous ML processing
+- **Task Queue**: Built-in `BackgroundTasks` for asynchronous processing
 - **Database & Storage**: Supabase (PostgreSQL + Object Storage)
 
 ### Machine Learning & NLP
-- **Predictive Modeling**: CatBoost, XGBoost
-- **Explainability**: SHAP (SHapley Additive exPlanations)
-- **Document Parsing & NLP**: `PyMuPDF` (fitz), `python-docx`, `spaCy`
-
-### AI / LLM
-- **Inference**: Mistral API (High-speed structured generation)
+- **Document Parsing & NLP**: `PyMuPDF` (fitz), `python-docx`
+- **AI / LLM Inference**: Mistral API (High-speed structured generation)
 
 ---
 
