@@ -29,7 +29,7 @@ export function SummaryRow({ matchScore, decision }: SummaryRowProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mx-auto">
       {/* Match Score — Radial Gauge */}
       <div className="bg-card border border-border rounded-xl p-6 flex flex-col items-center justify-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-primary/30 transition-all duration-300">
-        <h3 className="text-sm font-medium text-muted-foreground mb-4">Resume Match Score</h3>
+        <h3 className="text-sm font-medium text-muted-foreground mb-4">Fit score (0-100)</h3>
         <PlacementGauge value={matchScore} />
       </div>
 
@@ -41,7 +41,7 @@ export function SummaryRow({ matchScore, decision }: SummaryRowProps) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-muted-foreground truncate">
-              Screening Decision
+              Suggested outcome (human review required)
             </p>
             <p className="text-2xl lg:text-3xl font-bold text-foreground leading-tight">
               {decision}

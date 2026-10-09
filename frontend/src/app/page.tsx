@@ -1,191 +1,81 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
+import { CheckCircle, Download, Play } from "lucide-react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { UploadCard } from "@/components/UploadCard";
 import { SummaryRow } from "@/components/SummaryRow";
 import { SkillMatchPanel } from "@/components/SkillMatchPanel";
 import { CandidateFitPanel } from "@/components/CandidateFitPanel";
-import { Play, CheckCircle, Download } from "lucide-react";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
+import { RequirementsPanel } from "@/components/RequirementsPanel";
+import { DriversPanel } from "@/components/DriversPanel";
+import { AuditPanel } from "@/components/AuditPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
+import { analyze, type AnalysisResult } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const DEMO_JD =
+  "Backend Engineer. Requirements: 4+ years of experience building REST APIs in Python. Experience with Docker, " +
+  "Kubernetes and AWS is required. Bachelor's degree in Computer Science. Preferred: PostgreSQL experience is a plus.";
 
-interface AnalysisResult {
-  matchScore: number;
-  decision: string;
-  matchingSkills: string[];
-  missingSkills: string[];
-  summary: string;
-}
-
-const runAnalysis = async (file: File, jobDescription: string): Promise<AnalysisResult> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("job_description", jobDescription);
-
-  const uploadRes = await fetch(`${API_URL}/upload`, {
-    method: "POST",
-    headers: {
-      "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
-    },
-    body: formData,
-  });
-  if (!uploadRes.ok) {
-    const errorData = await uploadRes.json().catch(() => ({}));
-    const errorMsg = errorData.error || (typeof errorData.detail === 'string' ? errorData.detail : "Upload failed for " + file.name);
-    throw new Error(errorMsg);
-  }
-  
-  const { job_id } = await uploadRes.json();
-
-  return new Promise((resolve, reject) => {
-    const pollInterval = setInterval(async () => {
-      try {
-        const statusRes = await fetch(`${API_URL}/result/${job_id}`, {
-          headers: {
-            "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
-          }
-        });
-        const statusData = await statusRes.json();
-        
-        if (statusData.status === "completed") {
-          clearInterval(pollInterval);
-          
-          const backendRes = statusData.result;
-
-          resolve({
-            matchScore: backendRes.match_score || 0,
-            decision: backendRes.decision || "Review",
-            matchingSkills: backendRes.matching_skills || [],
-            missingSkills: backendRes.missing_skills || [],
-            summary: backendRes.summary || "Analysis complete."
-          });
-        } else if (statusData.status === "failed") {
-          clearInterval(pollInterval);
-          reject(new Error(statusData.result?.error || "Analysis failed"));
-        }
-      } catch (e) {
-        clearInterval(pollInterval);
-        reject(e);
-      }
-    }, 2000);
-  });
-};
+const DEMO_RESUME = [
+  "Alex Morgan",
+  "alex.morgan@example.com | 555-123-4567",
+  "Summary: Backend engineer with 6 years of experience building REST APIs in Python and FastAPI.",
+  "Deployed services with Docker and Kubernetes on AWS; maintained PostgreSQL databases and CI/CD pipelines.",
+  "Skills: Python, SQL, Docker, Kubernetes, AWS, PostgreSQL, Git",
+  "Experience: 03/2018 to Present, Senior Software Engineer. Led a team of four engineers.",
+  "Education: Bachelor of Science in Computer Science, Northfield State University.",
+].join("\n");
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [jobDescription, setJobDescription] = useState<string>("");
-  
-  const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
+  const [redact, setRedact] = useState(true);
+  const [results, setResults] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
-
-  const [results, setResults] = useState<AnalysisResult | null>(null);
 
   const handleUpload = (f: File, jd: string) => {
     setFile(f);
     setJobDescription(jd);
     setResults(null);
-    setHasAnalyzed(false);
     setError(null);
   };
 
-  const handleAnalyze = async () => {
-    if (!file || !jobDescription) return;
-    
+  const run = async (f: File, jd: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await runAnalysis(file, jobDescription);
-      setResults(res);
-      setHasAnalyzed(true);
-    } catch (err: any) {
-      console.error("Analysis process failed:", err);
-      setError(err.message || "Analysis failed due to an unknown error.");
+      setResults(await analyze(f, jd, redact));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Analysis failed.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRunDemo = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/demo`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": process.env.NEXT_PUBLIC_API_KEY || "",
-        },
-        body: JSON.stringify({
-          job_description: "We are looking for a software engineer with strong React and Python skills, who has a high GPA and good project experience.",
-          cgpa: 8.5,
-          projects_count: 3,
-          internships_count: 1,
-          certifications_count: 2,
-          skills_list: ["React", "Python", "AWS"],
-          college_tier: "Tier 2",
-          branch: "CSE"
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error("Demo request failed");
-      }
-      
-      const data = await response.json();
-      
-      setResults({
-        matchScore: data.match_score || 0,
-        decision: data.decision || "Review",
-        matchingSkills: data.matching_skills || [],
-        missingSkills: data.missing_skills || [],
-        summary: data.summary || "Analysis complete."
-      });
-      setHasAnalyzed(true);
-
-    } catch (error) {
-      console.error("Demo failed:", error);
-      // Fallback
-      setResults({
-        matchScore: 85,
-        decision: "Shortlist",
-        matchingSkills: ["React", "Python"],
-        missingSkills: ["Docker", "Kubernetes"],
-        summary: "The candidate shows strong foundation in React and Python, which aligns well with the core requirements. However, they lack DevOps experience."
-      });
-      setHasAnalyzed(true);
-    }
-    setIsLoading(false);
+  const handleDemo = () => {
+    const demo = new File([DEMO_RESUME], "sample_resume.txt", { type: "text/plain" });
+    setFile(demo);
+    setJobDescription(DEMO_JD);
+    void run(demo, DEMO_JD);
   };
 
   const handleExportPDF = async () => {
     if (!reportRef.current) return;
-    
-    // Temporarily hide buttons for export
-    const actionButtons = document.getElementById("pdf-action-buttons");
-    if (actionButtons) actionButtons.style.display = 'none';
-
+    const buttons = document.getElementById("pdf-action-buttons");
+    if (buttons) buttons.style.display = "none";
     try {
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-      });
-      const imgData = canvas.toDataURL("image/png");
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("Candidate_Screening_Report.pdf");
-    } catch (err) {
-      console.error("PDF Export failed", err);
+      const w = pdf.internal.pageSize.getWidth();
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, (canvas.height * w) / canvas.width);
+      pdf.save("EviMatch_Screening_Report.pdf");
     } finally {
-      // Restore buttons
-      if (actionButtons) actionButtons.style.display = 'flex';
+      if (buttons) buttons.style.display = "flex";
     }
   };
 
@@ -195,86 +85,78 @@ export default function Home() {
         <ThemeToggle />
       </div>
       <div className="max-w-6xl mx-auto space-y-12">
-        
-        {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-            AI Resume Screening & Job-Matching
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">EviMatch</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Paste a job description and upload a resume to get an AI-powered analysis of the candidate's fit, matching skills, and a shortlist recommendation.
+            Evidence-grounded resume screening. Every score comes with the resume sentences that support it, names
+            and other identity cues are removed before scoring, and a bias check shows what redaction leaves behind.
           </p>
         </div>
 
-        {/* Conditionally render Loading Skeleton or Upload Section */}
         {isLoading ? (
           <LoadingSkeleton />
         ) : (
-          <>
-            {/* Upload Section */}
-            <section className="flex flex-col items-center space-y-6 mt-6">
-              <UploadCard onUpload={handleUpload} isLoading={isLoading} />
-              
-              {error && (
-                <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex items-center gap-4">
-                <button
-                  id="tour-analyze"
-                  onClick={handleAnalyze}
-                  disabled={isLoading || hasAnalyzed || !file || !jobDescription}
-                  className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                  Analyze Resume
-                </button>
-                <button
-                  id="tour-demo"
-                  onClick={handleRunDemo}
-                  disabled={isLoading}
-                  className="flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full font-semibold hover:bg-foreground/90 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  <Play className="w-5 h-5" />
-                  Run Demo
-                </button>
+          <section className="flex flex-col items-center space-y-6 mt-6">
+            <UploadCard onUpload={handleUpload} isLoading={isLoading} />
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              <input type="checkbox" checked={redact} onChange={(e) => setRedact(e.target.checked)} />
+              Remove names, contact details, institutions and pronouns before scoring (recommended)
+            </label>
+            {error && (
+              <div className="w-full max-w-md bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm text-center">
+                {error}
               </div>
-            </section>
-          </>
+            )}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => file && void run(file, jobDescription)}
+                disabled={!file || jobDescription.trim().split(/\s+/).length < 25}
+                className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+              >
+                <CheckCircle className="w-5 h-5" /> Analyze resume
+              </button>
+              <button
+                onClick={handleDemo}
+                className="flex items-center gap-2 px-6 py-3 bg-foreground text-background rounded-full font-semibold hover:bg-foreground/90 transition-all shadow-lg active:scale-95"
+              >
+                <Play className="w-5 h-5" /> Run sample
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground max-w-xl text-center">
+              Decision support only. Resumes are processed in memory and are not stored. A person must review the
+              evidence before any hiring outcome.
+            </p>
+          </section>
         )}
 
-        {/* Results Section */}
-        {results && (
+        {results && file && (
           <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700" ref={reportRef}>
             <div id="pdf-action-buttons" className="flex justify-between items-center bg-card p-4 rounded-2xl border shadow-sm">
-              <h3 className="font-bold text-lg">Screening Report</h3>
+              <h3 className="font-bold text-lg">Screening report{results.filename ? ` - ${results.filename}` : ""}</h3>
               <button
                 onClick={handleExportPDF}
                 className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors text-sm"
               >
-                <Download className="w-4 h-4" />
-                Download PDF
+                <Download className="w-4 h-4" /> Download PDF
               </button>
             </div>
 
-            <SummaryRow
-              matchScore={results.matchScore}
-              decision={results.decision}
-            />
-            
+            <SummaryRow matchScore={results.fit_score} decision={results.decision} />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="h-full">
-                <SkillMatchPanel
-                  matchingSkills={results.matchingSkills}
-                  missingSkills={results.missingSkills}
-                />
-              </div>
-              <div className="h-full">
-                <CandidateFitPanel summary={results.summary} />
-              </div>
+              <CandidateFitPanel
+                summary={results.summary}
+                narrative={results.narrative}
+                warnings={results.warnings}
+                redactionCounts={results.redaction.counts}
+                redactionApplied={results.redaction.applied}
+              />
+              <DriversPanel groupEffects={results.group_effects} drivers={results.drivers} />
             </div>
+
+            <RequirementsPanel requirements={results.requirements} counts={results.requirement_counts} />
+            <SkillMatchPanel matchingSkills={results.matching_skills} missingSkills={results.missing_skills} />
+            <AuditPanel file={file} jobDescription={jobDescription} redact={redact} />
           </div>
         )}
       </div>
