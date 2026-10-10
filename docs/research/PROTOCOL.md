@@ -125,4 +125,3 @@ in the exploration table) was scored on `test.csv`.
    sit on one line and may not contain header words, digits or camel-case tokens. Because
    the shipped redactor must equal the evaluated one, E1-E7 and the artefact were re-run
    after the fix; the first-run outputs remain in git history (commit 0ac0238).
-

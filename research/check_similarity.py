@@ -40,7 +40,7 @@ def fetch_abstracts(ids: list[str]) -> dict[str, str]:
             break
         except Exception:  # noqa: BLE001 - arXiv rate-limits bursts; back off and retry
             time.sleep(5 * 2**attempt)
-    root = ET.fromstring(data)
+    root = ET.fromstring(data)  # nosec B314 - response from a fixed https arXiv endpoint, no entity expansion needed
     out = {}
     for e in root.findall("a:entry", ATOM):
         aid = e.find("a:id", ATOM).text.split("/abs/")[-1].split("v")[0]  # type: ignore[union-attr]
