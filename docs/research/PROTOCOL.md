@@ -129,4 +129,3 @@ in the exploration table) was scored on `test.csv`.
    left in place by the redactor, so with redaction on the comparison measured the placeholder token
    (-0.47 points), not gender. The control is now the opposite gender marker, which the redactor also
    removes. Only this row changed; `bias_audit_local.json` was regenerated.
-
