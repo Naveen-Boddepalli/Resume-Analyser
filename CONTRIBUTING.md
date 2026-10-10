@@ -41,10 +41,11 @@ To contribute to the backend or frontend, you'll need to set up the project loca
 4. **Environment Variables**:
    Create a `.env` file in the `backend/` directory with your local credentials:
    ```env
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_KEY=your_supabase_anon_key
-   MISTRAL_API_KEY=your_mistral_api_key
-   MISTRAL_API_URL=https://api.mistral.ai/v1/chat/completions
+   API_KEY=choose_a_long_random_value      # optional; if unset, authentication is disabled
+   CORS_ORIGINS=http://localhost:3000
+   # Optional, off by default: LLM rephrasing of the evidence (the score never depends on it)
+   ENABLE_LLM_NARRATIVE=0
+   MISTRAL_API_KEY=
    ```
 
 5. **Run the backend locally**:

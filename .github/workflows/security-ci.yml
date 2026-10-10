@@ -34,10 +34,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       - name: Install Bandit
         run: pip install bandit
 
-      - name: Run Bandit on backend and ml
-        run: bandit -r backend ml -ll -i
+      - name: Run Bandit on backend and research
+        run: bandit -r backend research -ll -i
