@@ -155,7 +155,15 @@ def fig_confusion(s2: dict) -> None:
     ax.set_ylabel("True")
     for i in range(3):
         for j in range(3):
-            ax.text(j, i, f"{int(cm[i, j])}\n({norm[i, j]:.0%})", ha="center", va="center", fontsize=7, color="white" if norm[i, j] > 0.55 else INK)
+            ax.text(
+                j,
+                i,
+                f"{int(cm[i, j])}\n({norm[i, j]:.0%})",
+                ha="center",
+                va="center",
+                fontsize=7,
+                color="white" if norm[i, j] > 0.55 else INK,
+            )
     ax.set_title("M3 on S2 (row-normalised)", loc="left")
     fig.tight_layout()
     fig.savefig(FIG / "fig_confusion.pdf")
@@ -182,7 +190,11 @@ def fig_ablation(ab2: dict) -> None:
 
 def fig_learning_curve(lc: dict) -> None:
     fig, ax = plt.subplots(figsize=(3.4, 2.7))
-    spec = [("M3", BLUE, "-", "M3 EviMatch"), ("B6", ORANGE, "-", "B6 embedding head"), ("B3_threshold", GRAY, "--", "B3 thresholds")]
+    spec = [
+        ("M3", BLUE, "-", "M3 EviMatch"),
+        ("B6", ORANGE, "-", "B6 embedding head"),
+        ("B3_threshold", GRAY, "--", "B3 thresholds"),
+    ]
     for key, c, ls, lab in spec:
         xs, ms, sd = [], [], []
         for f in lc["fractions"]:
@@ -217,8 +229,8 @@ def fig_audit(au: dict) -> None:
     ax.axvline(0, color=INK, lw=0.8)
     ax.set_yticks(range(len(keys)), [k.replace("_", " ").replace(":", ": ") for k in keys])
     ax.invert_yaxis()
-    ax.set_xlabel("score change vs. neutral control line (0-100 scale)")
-    ax.legend(frameon=False, loc="lower left")
+    ax.set_xlabel("score change vs. control line (points, 0-100)")
+    ax.legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2)
     clean(ax)
     fig.tight_layout()
     fig.savefig(FIG / "fig_audit.pdf")
@@ -279,35 +291,45 @@ def table_ablation(a1: dict, a2: dict) -> str:
         v1, v2 = a1["variants"][k], a2["variants"][k]
         d1 = v1.get("delta_macro_f1_vs_full", {}).get("diff", 0.0)
         d2 = v2.get("delta_macro_f1_vs_full", {}).get("diff", 0.0)
-        lines.append(f"{k.replace('_', ' ')} & {f3(v1['macro_f1'])} & {d1:+.3f} & {f3(v2['macro_f1'])} & {d2:+.3f} " + r"\\")
+        lines.append(
+            f"{k.replace('_', ' ')} & {f3(v1['macro_f1'])} & {d1:+.3f} & {f3(v2['macro_f1'])} & {d2:+.3f} " + r"\\"
+        )
     lines += [r"\bottomrule", r"\end{tabular}"]
     return "\n".join(lines)
 
 
 def table_audit(au: dict) -> str:
+    def num(x: float) -> str:
+        return f"{x:+.2f}".replace("-", "$-$")
+
+    def pct(x: float) -> str:
+        return f"{100 * x:.1f}\\%"
+
     lines = [
         r"\begin{tabular}{l rr rr}",
         r"\toprule",
         r" & \multicolumn{2}{c}{Redaction on} & \multicolumn{2}{c}{Redaction off} \\",
         r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}",
-        r"Cue vs. control line & $\Delta$ score & flips & $\Delta$ score & flips \\",
+        r"Cue vs. control line & $\Delta$ score [95\% CI] & flips & $\Delta$ score [95\% CI] & flips \\",
         r"\midrule",
     ]
     on, off = au["redaction_on"]["proxy_rows"], au["redaction_off"]["proxy_rows"]
     for a, b in zip(on, off):
-        name = a["condition"].replace("_", " ")
+        name = a["condition"].replace("_", " ").replace(":", ": ")
         lines.append(
-            f"{name} & {a['mean_delta']:+.2f} [{a['ci95'][0]:+.2f}, {a['ci95'][1]:+.2f}] & {a['decision_flip_rate']:.1%} & "
-            f"{b['mean_delta']:+.2f} [{b['ci95'][0]:+.2f}, {b['ci95'][1]:+.2f}] & {b['decision_flip_rate']:.1%} " + r"\\"
+            f"{name} & {num(a['mean_delta'])} [{num(a['ci95'][0])}, {num(a['ci95'][1])}] & {pct(a['decision_flip_rate'])} & "
+            f"{num(b['mean_delta'])} [{num(b['ci95'][0])}, {num(b['ci95'][1])}] & {pct(b['decision_flip_rate'])} "
+            + r"\\"
         )
     lines.append(r"\midrule")
+    on_g, off_g = au["redaction_on"], au["redaction_off"]
     lines.append(
-        f"max name-cell gap (score pts) & \\multicolumn{{2}}{{c}}{{{au['redaction_on']['name_gap']['max_pairwise_gap']:.3f}}} & "
-        f"\\multicolumn{{2}}{{c}}{{{au['redaction_off']['name_gap']['max_pairwise_gap']:.3f}}} " + r"\\"
+        f"largest gap between name-cell means & \\multicolumn{{2}}{{c}}{{{on_g['name_gap']['max_pairwise_gap']:.3f}}} & "
+        f"\\multicolumn{{2}}{{c}}{{{off_g['name_gap']['max_pairwise_gap']:.3f}}} " + r"\\"
     )
     lines.append(
-        f"max per-pair name variation & \\multicolumn{{2}}{{c}}{{{au['redaction_on']['max_abs_name_variation_per_pair']:.3f}}} & "
-        f"\\multicolumn{{2}}{{c}}{{{au['redaction_off']['max_abs_name_variation_per_pair']:.3f}}} " + r"\\"
+        f"largest per-pair change across 40 names & \\multicolumn{{2}}{{c}}{{{on_g['max_abs_name_variation_per_pair']:.3f}}} & "
+        f"\\multicolumn{{2}}{{c}}{{{off_g['max_abs_name_variation_per_pair']:.3f}}} " + r"\\"
     )
     lines += [r"\bottomrule", r"\end{tabular}"]
     return "\n".join(lines)
@@ -318,7 +340,12 @@ def main() -> None:
     TAB.mkdir(parents=True, exist_ok=True)
     s1, s2 = load("main_S1.json"), load("main_S2.json")
     a1, a2 = load("ablation_S1.json"), load("ablation_S2.json")
-    lc, au, fid, noise = load("learning_curve.json"), load("bias_audit_local.json"), load("fidelity.json"), load("label_noise.json")
+    lc, au, fid, noise = (
+        load("learning_curve.json"),
+        load("bias_audit_local.json"),
+        load("fidelity.json"),
+        load("label_noise.json"),
+    )
     fig_macro_f1(s1, s2)
     fig_roc(s2)
     fig_confusion(s2)

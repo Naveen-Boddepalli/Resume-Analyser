@@ -3,6 +3,8 @@
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
 \usepackage[hidelinks]{hyperref}
@@ -13,8 +15,7 @@
 \title{EviMatch: Evidence-Grounded and Bias-Audited Resume--Job Matching, with a Leakage Analysis of a Public Benchmark}
 
 \author{\IEEEauthorblockN{Naveen Boddepalli}
-\IEEEauthorblockA{[Department, Institution]\\
-[City, Country]\\
+\IEEEauthorblockA{\textit{[Department, Institution]}, [City, Country]\\
 1234naveenboddepalli@gmail.com}}
 
 \maketitle

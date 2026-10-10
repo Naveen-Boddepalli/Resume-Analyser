@@ -8,8 +8,7 @@ burden: conSultantBERT fine-tunes a Siamese SBERT on more than 270{,}000 consult
 \cite{lavi2021consultantbert}, and an end-to-end BERT pipeline ranks candidates after parsing resumes
 \cite{bhatia2019endtoend}. ConFit and ConFit~v2 address label scarcity with LLM-generated augmentations and
 contrastive learning, improving ranking over BM25 and commercial embeddings
-\cite{yu2024confit,yu2025confitv2}. A recent re-ranker distils an LLM teacher into a long-context student
-\cite{jouanneau2026longcontext}. On the systems side, Smart-Hiring combines entity extraction with
+\cite{yu2024confit,yu2025confitv2}. On the systems side, Smart-Hiring combines entity extraction with
 embeddings in an inspectable pipeline \cite{khelkhal2025smarthiring}, and a multi-agent LLM framework
 scores resumes against HR ratings \cite{lo2025multiagent}.
 Table~\ref{tab:related} summarises the properties that matter for the setting studied here.
@@ -19,7 +18,7 @@ Table~\ref{tab:related} summarises the properties that matter for the setting st
 cited paper; ``--'' means the paper's abstract does not state it.}
 \label{tab:related}
 \centering\small
-\begin{tabular}{p{3.0cm}p{3.3cm}p{3.4cm}p{3.0cm}p{3.7cm}}
+\begin{tabular}{P{3.0cm}P{3.3cm}P{3.4cm}P{3.0cm}P{3.7cm}}
 \toprule
 Work & Method & Training data & Evidence shown & Gap relevant to this paper \\
 \midrule
@@ -45,18 +44,17 @@ late interaction scores a query by matching each query unit to its best document
 the best match can be displayed to a reviewer.
 
 \subsection{Skill extraction}
-SkillSpan annotates hard and soft skill spans in English postings \cite{zhang2022skillspan}; later work links
-mentions to large ontologies using synthetic LLM supervision \cite{decorte2023xmlc} or in-context prompting,
-which handles complex mentions but trails supervised models \cite{nguyen2024skillllm}. Those models need
-training or API access. We instead use a small transparent lexicon so that every extracted skill can be audited,
-and we state the coverage trade-off in Section~\ref{sec:conclusion}.
+SkillSpan annotates hard and soft skill spans in English postings and is the reference benchmark for
+learned extractors \cite{zhang2022skillspan}. Such extractors need training data or model access. We instead use a
+small transparent lexicon so that every extracted skill can be audited, and we state the coverage trade-off in
+Section~\ref{sec:conclusion}.
 
 \subsection{Bias in automated screening}
 The audit tradition goes back to a field experiment in which identical resumes with different names
 received different callback rates \cite{bertrand2004emily}. Applying the same design to embedding-based
 retrieval, Wilson and Caliskan found strong preference for white-associated names \cite{wilson2024silicon};
 audits of GPT and other language models report name- and gender-dependent scores or decisions
-\cite{armstrong2024silicon,an2024discriminate,an2025measuring,wang2024jobfair}. Scrubbing explicit indicators
+\cite{armstrong2024silicon,an2024discriminate,wang2024jobfair}. Scrubbing explicit indicators
 reduces but does not eliminate dependence, because proxies persist \cite{dearteaga2019biasinbios,gonen2019lipstick},
 and reviews of vendor claims urge evidence rather than assertion \cite{raghavan2020mitigating}. We follow this
 audit design and report residual proxy effects instead of claiming invariance.

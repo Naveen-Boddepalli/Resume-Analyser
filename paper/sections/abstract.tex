@@ -1,0 +1,15 @@
+Automated resume screening is widespread and increasingly regulated, yet published matchers usually return an
+opaque score, depend on private application logs, and leave bias unmeasured. We present EviMatch, an open and
+deterministic pipeline that removes identity cues before scoring, parses a posting into weighted requirements,
+links each requirement to the resume sentence that best supports it, and combines lexical, semantic, skill and
+experience features in a low-capacity head. On a public benchmark of 8,000 labelled pairs we first show that the
+official split is leaky: 99.9\% of test resumes also occur in training, and a predictor that ignores the posting
+reaches macro-F1 0.42. Under a doubly-disjoint protocol, in which neither resume nor posting of a test pair is
+seen in training, EviMatch reaches macro-F1 0.473 against 0.405--0.412 for TF-IDF, BM25, dense-similarity and
+supervised embedding baselines (paired differences 0.06--0.07, intervals excluding zero). Ablations indicate that
+experience and skill features carry the signal, whereas semantic coverage supplies evidence rather than accuracy.
+Deleting the sentences an explanation cites changes the score about four times more than deleting random text.
+A counterfactual audit found and led us to fix a defect in our own redactor; afterwards, name cues change the
+score by exactly zero, while proxy cues such as affinity organisations still shift it by up to 0.2 points on a
+100-point scale. Absolute accuracy is modest and labels are noisy, so the system supports review and should not
+automate decisions.
