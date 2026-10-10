@@ -32,7 +32,7 @@ def llm_narrative(analysis: dict[str, Any], timeout: float = 15.0) -> str | None
         "missing_skills": analysis["missing_skills"][:8],
         "experience": analysis["experience"],
     }
-    payload = {
+    payload: dict[str, Any] = {
         "model": MISTRAL_MODEL,
         "temperature": 0,
         "max_tokens": 160,

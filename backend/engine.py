@@ -6,7 +6,7 @@ import os
 import threading
 from pathlib import Path
 
-from resumatch import EviMatch, HashingEmbedder, SentenceTransformerEmbedder
+from resumatch import Embedder, EviMatch, HashingEmbedder, SentenceTransformerEmbedder
 from resumatch.pipeline import DEFAULT_ARTIFACT
 
 _lock = threading.Lock()
@@ -14,7 +14,8 @@ _engine: EviMatch | None = None
 
 
 def build_engine(artifact: str | Path = DEFAULT_ARTIFACT, embedder_kind: str | None = None) -> EviMatch:
-    kind = (embedder_kind or os.getenv("EVIMATCH_EMBEDDER", "minilm")).lower()
+    kind = str(embedder_kind or os.getenv("EVIMATCH_EMBEDDER", "minilm")).lower()
+    embedder: Embedder
     if kind == "hashing":
         # Lexical stand-in for offline demos and tests. NOT what the artefact was trained with.
         embedder = HashingEmbedder(256)

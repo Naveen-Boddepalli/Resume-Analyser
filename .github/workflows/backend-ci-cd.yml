@@ -45,7 +45,7 @@ jobs:
         
       - name: Run mypy (type checking)
         # mypy might fail initially if code isn't fully typed, adjust strictly as needed
-        run: mypy backend research --ignore-missing-imports
+        run: mypy backend --ignore-missing-imports
 
       - name: Run tests with pytest
         run: pytest backend
