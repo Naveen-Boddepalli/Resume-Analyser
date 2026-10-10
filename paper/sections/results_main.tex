@@ -1,0 +1,110 @@
+\section{Results and Discussion}\label{sec:results}
+\subsection{Accuracy on the official split and on the doubly-disjoint split}
+Table~\ref{tab:main} and Fig.~\ref{fig:macrof1} give the main comparison. Three observations stand out.
+
+\emph{The official split rewards memorising resumes.} A predictor that ignores the job description and
+returns the training majority label of the resume (B0r) reaches macro-F1 0.420, above TF-IDF, BM25, and both
+dense similarity baselines (0.339--0.365), and EviMatch's linear head (M3, 0.439) is not significantly
+better than it (paired difference $+0.019$, 95\% CI $[-0.044,+0.085]$). The supervised embedding head B6 reaches
+0.480 on S1 but only 0.409 on S2, where resumes are held out. We therefore treat S2 as the primary
+measure of matching ability.
+
+\emph{On S2, EviMatch is consistently better than similarity baselines.} M3 reaches macro-F1 0.473
+(95\% CI 0.437--0.507) against 0.405--0.412 for B1--B4 and B6. Paired differences are $+0.061$ to $+0.068$
+with intervals that exclude zero (all $p\le0.008$), and nDCG@10 is 0.838 against 0.782--0.805
+(paired differences $+0.033$ to $+0.056$). The gradient-boosted head M4 is statistically indistinguishable
+from M3 ($-0.006$, $[-0.032,+0.023]$), so we keep the linear head, whose behaviour is easier to inspect.
+
+\emph{Absolute accuracy is modest.} On S2, M3 has Good-Fit precision 0.32 and recall 0.42, and a
+quadratic-weighted kappa of 0.30 (Table~\ref{tab:perclass}, Fig.~\ref{fig:cm}). The Potential-Fit class,
+the most ambiguous by construction, is confused with both neighbours. The model is useful for ordering
+candidates within a posting, not for automated rejection, and Section~\ref{sec:conclusion} returns to this.
+
+\begin{table*}[t]
+\caption{Main results. S1: official split. S2: doubly-disjoint five-fold evaluation. AUC$_G$: ROC-AUC for
+Good Fit vs.\ rest. nDCG@10 is the mean over postings with at least five candidates; S2 postings have fewer
+candidates, so ranking levels are not comparable across the two splits. B0r exploits resume overlap and is a
+diagnostic only. X1/X2 add single-document features that let a model memorise resumes.}
+\label{tab:main}
+\centering\scriptsize
+\input{tables/main.tex}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_macro_f1.pdf}
+\caption{Macro-F1 with 95\% intervals from bootstrap resampling of job descriptions. Gray: similarity
+baselines and diagnostics; orange: supervised embedding head; blue: EviMatch variants.}
+\label{fig:macrof1}
+\end{figure*}
+
+\begin{table}[t]
+\caption{Per-class results of M3 on S2.}
+\label{tab:perclass}
+\centering\small
+\input{tables/per_class.tex}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\columnwidth]{figures/fig_confusion.pdf}
+\caption{Confusion matrix of M3 on S2 (counts and row percentages).}
+\label{fig:cm}
+\end{figure}
+
+\subsection{Where the signal comes from}
+Table~\ref{tab:ablation} and Fig.~\ref{fig:ablation} remove one feature group at a time. On S2,
+removing the four \emph{experience} features costs 0.053 macro-F1 (CI $[-0.076,-0.029]$) and removing
+\emph{skills} costs 0.032 ($[-0.056,-0.008]$). Removing the \emph{lexical} group changes nothing
+($0.000$), and removing the \emph{semantic} group is, if anything, slightly positive ($+0.007$,
+$[-0.015,+0.031]$). The four experience features alone reach 0.461, within noise of the full model
+($-0.012$, $[-0.046,+0.026]$), although ranking quality then drops by 0.060 nDCG@10. In this benchmark the
+labels appear to track how well a candidate's seniority and listed skills line up with the posting,
+and the semantic coverage we expected to be central adds no significant accuracy. We still keep it,
+because it supplies the sentence-level evidence that makes the score reviewable, but we do not claim that it
+improves accuracy. Neither redaction ($0.000$ on S2, $+0.002$ on S1), the induced vocabulary, nor swapping
+MiniLM for BGE-small ($+0.010$, $[-0.010,+0.033]$) changed accuracy measurably. The redaction result is a
+lower bound on its cost because the benchmark's resumes are partly anonymised.
+
+\begin{table}[t]
+\caption{Ablations of M3 (macro-F1 and difference from the full model).}
+\label{tab:ablation}
+\centering\scriptsize
+\input{tables/ablation.tex}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_ablation.pdf}
+\caption{Change in macro-F1 on S2 when a component is removed or used alone.}
+\label{fig:ablation}
+\end{figure}
+
+\subsection{Leakage}
+Adding the seven single-document features to M3 (X1) raises S1 macro-F1 by $0.025$ (0.439 to 0.464;
+paired $-0.024$, $[-0.056,+0.004]$) but changes S2 by only $+0.004$. The direction matches
+the explanation that these features let a model recognise resumes, but with 71 test postings the S1
+increase is not statistically significant, so we report it as consistent rather than conclusive. The
+resume-identity prior and the S1/S2 behaviour of B6 are the stronger evidence.
+
+\subsection{How much labelled data is needed?}
+Fig.~\ref{fig:lc} trains on random subsets of training postings. With about 270 pairs M3 is already at
+0.396 macro-F1, and it improves to 0.475 with about 5{,}100 pairs, whereas threshold baselines move from
+0.384 to 0.406 and the embedding head from 0.374 to 0.409. Variation across runs is large (standard
+deviation 0.02--0.06), so differences below about 0.03 at a single size should not be over-read.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig_learning_curve.pdf}
+\caption{Macro-F1 on S2 test folds as a function of the number of training pairs
+(mean of 15 runs, band $\pm1$ s.d.).}
+\label{fig:lc}
+\end{figure}
+
+\subsection{Are the cited sentences faithful to the model?}
+For 580 sampled test pairs we delete the sentences the explanation cites (the best sentences of the five
+strongest met requirements plus the evidence of up to five skills, on average 5.1 sentences) and
+re-score. The score falls by 7.7 points on average. Deleting the same number of words from randomly chosen
+other sentences lowers it by 1.8 points. The difference of 5.9 points ($95\%$ CI $5.0$--$6.9$) holds for
+86.7\% of pairs. Cited evidence is therefore not decorative. The test is a check against the model, not
+a human study of whether reviewers find the explanations useful, which remains future work.

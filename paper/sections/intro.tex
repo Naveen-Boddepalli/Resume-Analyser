@@ -1,0 +1,44 @@
+\section{Introduction}
+Employers routinely receive far more applications than people can read, and software now decides
+which resumes reach a human. Screening software is therefore a consequential system, and regulators
+have started to treat it as one: the European AI Act places systems that filter or evaluate job
+applications in its high-risk category, with obligations on transparency and human oversight
+\cite{euaiact2024}. Two properties follow for any practical matcher. A reviewer must be able to
+see \emph{why} a candidate was scored as they were, and the builder must be able to show that
+irrelevant attributes such as a name do not change the outcome.
+
+Research on person--job fit has mostly pursued accuracy. Convolutional and recurrent matchers learn
+from historical application logs \cite{zhu2018pjfnn,qin2018apjfnn}; fine-tuned sentence encoders use
+hundreds of thousands of consultant-labelled pairs \cite{lavi2021consultantbert}; and recent work
+adds language-model data augmentation \cite{yu2024confit,yu2025confitv2} or multi-agent prompting
+\cite{lo2025multiagent}. These systems share three weaknesses for deployment. Their training data
+are private, so results cannot be reproduced. Their output is usually one similarity score, with
+no statement of which requirement is met by which part of the resume. And bias is treated as a
+future direction or left unmeasured, although audits show that embedding retrievers and language models
+rank resumes differently when only the name changes
+\cite{wilson2024silicon,armstrong2024silicon,an2024discriminate,wang2024jobfair}.
+Removing explicit gender or race indicators is a common response, yet it is known to leave proxy
+signal behind \cite{dearteaga2019biasinbios,gonen2019lipstick}.
+
+A further, less discussed problem concerns evaluation. The public resume--job fit benchmark we use
+contains 8{,}000 labelled pairs but only 643 distinct resumes and 351 distinct job descriptions. Any
+single random or official split therefore lets a model profit from having seen the same resume
+before. A scorer that never looks at the job description can already be competitive on such a split.
+
+This paper makes four contributions.
+\begin{itemize}
+\item \textbf{EviMatch}, an open, deterministic matching pipeline that (i) removes identity cues before
+  scoring, (ii) parses a posting into weighted requirements, (iii) links each requirement to its
+  best-supporting resume sentence, and (iv) combines lexical, semantic, skill and relational
+  experience features in a low-capacity head whose every signal can be inspected.
+\item A \textbf{leakage analysis} of the benchmark and a doubly-disjoint evaluation protocol in which
+  neither the resume nor the job description of a test pair occurs in training.
+\item Empirical findings with confidence intervals: which feature groups carry the signal, how little
+  labelled data is needed, and that cited evidence is faithful to the model under a deletion test.
+\item A \textbf{counterfactual bias audit} for explicit and proxy cues. The audit exposed a defect in our own
+  redactor, which we report and fix; the corrected audit quantifies what redaction does and does not remove.
+\end{itemize}
+
+Section~\ref{sec:related} reviews related work, Section~\ref{sec:method} describes the system,
+Section~\ref{sec:setup} the experimental protocol, Section~\ref{sec:results} the results, and
+Section~\ref{sec:conclusion} concludes with limitations and concrete next steps.

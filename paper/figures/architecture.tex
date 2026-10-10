@@ -1,0 +1,32 @@
+% System architecture (TikZ). Included from main.tex inside figure*.
+\begin{tikzpicture}[
+  font=\footnotesize,
+  box/.style={draw, rounded corners=2pt, minimum height=8mm, align=center, inner sep=3pt, fill=#1},
+  box/.default=white,
+  arr/.style={-{Latex[length=2mm]}, thick},
+  lab/.style={font=\scriptsize\itshape, text=black!70}
+]
+\node[box=black!6] (res) {Resume\\(PDF/DOCX/TXT)};
+\node[box=black!6, below=5mm of res] (jd) {Job\\description};
+\node[box=blue!10, right=9mm of res] (red) {Blind\\redaction};
+\node[box=blue!10, right=9mm of jd] (req) {Requirement\\parser};
+\node[box=blue!10, right=9mm of red] (sent) {Sentence\\units};
+\node[box=blue!10, right=9mm of req] (sk) {Skill\\lexicon};
+\node[box=orange!15, right=9mm of sent, yshift=-6mm] (feat) {Pair features\\lexical $\cdot$ semantic\\skills $\cdot$ experience};
+\node[box=orange!15, right=9mm of feat] (head) {Fit model\\(prior-corrected)};
+\node[box=green!12, right=9mm of head, yshift=7mm] (out) {Score\\+ band};
+\node[box=green!12, below=3mm of out] (evi) {Evidence\\+ drivers};
+\node[box=green!12, below=3mm of evi] (aud) {Bias\\audit};
+\draw[arr] (res) -- (red);
+\draw[arr] (jd) -- (req);
+\draw[arr] (red) -- (sent);
+\draw[arr] (req) -- (sk);
+\draw[arr] (sent.east) -- ++(3mm,0) |- ([yshift=2mm]feat.west);
+\draw[arr] (sk.east) -- ++(3mm,0) |- ([yshift=-2mm]feat.west);
+\draw[arr] (feat) -- (head);
+\draw[arr] (head.east) -- ++(2mm,0) |- (out.west);
+\draw[arr] (head.east) -- ++(2mm,0) |- (evi.west);
+\draw[arr] (head.east) -- ++(2mm,0) |- (aud.west);
+\node[lab, above=1mm of red] {removes identity cues};
+\node[lab, below=1mm of req] {required / preferred};
+\end{tikzpicture}

@@ -1,0 +1,43 @@
+\section{Experimental Setup}\label{sec:setup}
+\subsection{Data}
+We use the public Hugging Face benchmark \texttt{cnamuangtoun/resume-job-description-fit}: 6{,}241
+training and 1{,}759 test pairs with labels No Fit (50\%), Potential Fit (25\%) and Good Fit (25\%). The
+hub page publishes no dataset card or licence, and how the labels were produced is undocumented; we treat the
+benchmark as research data of uncertain provenance and verify file checksums before every run. The
+resumes in this data set are already anonymised in places (placeholder city and state), so the cost of
+redaction measured here is a lower bound for raw resumes.
+
+\subsection{Splits}
+\textbf{S1} is the official split. It is job-description-disjoint, but 99.9\% of test resumes also occur in
+training. \textbf{S2} pools all 8{,}000 pairs, partitions resumes and job descriptions at random into five
+folds each (seed 13), and for fold $k$ trains on pairs whose resume \emph{and} job description fall outside
+fold $k$ and tests on pairs whose resume \emph{and} job description fall inside it. No test resume or posting is
+seen in training, and the five test sets are disjoint. Because both axes are held out, S2 has fewer
+candidates per posting than S1, so its ranking metrics are not comparable in level with S1.
+
+\subsection{Systems compared}
+\textbf{B0} predicts the majority class. \textbf{B0r} predicts the training label majority of the
+\emph{resume} and is a leakage diagnostic, not a competitor. \textbf{B1--B4} score each pair with TF-IDF
+cosine, BM25, MiniLM \cite{reimers2019sbert,wang2020minilm} document cosine or BGE-small document cosine
+\cite{xiao2024cpack} on raw text and learn only two score thresholds on training data. \textbf{B6} trains
+logistic regression on the concatenation $[\mathbf u\odot\mathbf v,|\mathbf u-\mathbf v|,\cos]$ of whole-document MiniLM
+embeddings. \textbf{M1} uses lexical, skill and experience features; \textbf{M2} only semantic features;
+\textbf{M3} is EviMatch with a linear head and \textbf{M4} with a gradient-boosted head. \textbf{X1/X2} add the
+excluded single-document features to M3/M4 to measure leakage.
+
+\subsection{Training and model selection}
+Hyper-parameters are chosen by five-fold grouped cross-validation on the training portion only, with
+folds grouped by job description. The grid is $C\in\{0.003,\dots,1\}$ for the linear head and depth
+$\{2,3\}\times$ iterations $\{100,200\}$ for the boosted head (learning rate 0.05). Under the
+one-standard-error rule we take the simplest candidate whose mean macro-F1 is within one standard error of
+the best. The sentence encoder is \texttt{all-MiniLM-L6-v2} (22.7M parameters) with a 128-token limit per sentence
+unit. Experiments ran on an Apple M4 laptop (16 GB) in a few minutes per configuration; all seeds are 13 and
+library versions and the git commit are stored with every result file.
+
+\subsection{Metrics and uncertainty}
+The primary metric is macro-F1 over the three classes. We also report accuracy, one-vs-rest ROC-AUC for
+Good Fit, per-class precision/recall/F1, a confusion matrix, quadratic-weighted kappa, and for ranking
+nDCG@10 per posting (graded gains 0/1/2, postings with at least five candidates, seeded random
+tie-breaking). Intervals are 95\% percentile bootstrap intervals that resample \emph{job descriptions},
+the unit of independence; differences between systems use paired resamples.
+The evaluation protocol, including every deviation made after it was written, is in the repository.

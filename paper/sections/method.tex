@@ -1,0 +1,86 @@
+\section{The EviMatch System}\label{sec:method}
+\begin{figure*}[t]
+\centering
+\input{figures/architecture.tex}
+\caption{EviMatch pipeline. Identity cues are removed before any feature is computed; the same
+analysis object yields the feature vector and the evidence shown to the reviewer, so an explanation
+cannot describe a signal the model did not use.}
+\label{fig:arch}
+\end{figure*}
+
+Figure~\ref{fig:arch} gives the overview. Given a resume $R$ and a job description $J$, the system
+returns a fit score $S\in[0,100]$, a decision band, and an evidence record.
+
+\subsection{Blind-screening front end}
+Redaction is rule based, deterministic and runs before segmentation. It removes e-mail addresses,
+telephone numbers, URLs, header names and ``Name:'' fields, personal-detail fields (date of birth,
+marital status, nationality, and similar), honorifics, graduation dates, institution names, and
+organisation names that carry a gender marker. Gendered pronouns and role nouns are neutralised
+(``she'' $\to$ ``they''). Institution names are removed because institutional prestige is a proxy
+for socio-economic background; for the same reason the system uses neither college tier nor grade
+point average, both of which an earlier version of this project fed to a language model. A redaction
+report lists how many items of each class were removed, never their content.
+
+\subsection{Requirement parsing}
+A posting mixes duties and qualifications with benefits, legal text and company marketing, which
+dilutes any whole-document similarity. The parser splits $J$ into sentence units, assigns each a kind
+$\kappa\in\{\text{required},\text{preferred},\text{duty},\text{other}\}$ from section headers and cue
+phrases, and drops boilerplate. Weights are fixed constants,
+$w_{\text{required}}{=}1$, $w_{\text{duty}}{=}0.75$, $w_{\text{preferred}}{=}0.5$, $w_{\text{other}}{=}0.4$.
+
+\subsection{Requirement-level evidence matching}
+Let $q_1,\dots,q_K$ be the requirement units with weights $w_k$, and $s_1,\dots,s_M$ the
+sentence units of the redacted resume. With $\mathbf{e}(\cdot)$ an L2-normalised sentence embedding,
+\begin{equation}
+c_k=\max_{m}\;\mathbf{e}(q_k)^{\!\top}\mathbf{e}(s_m),\qquad
+\mathrm{cov}(R,J)=\frac{\sum_k w_k c_k}{\sum_k w_k}.
+\label{eq:cov}
+\end{equation}
+The arg-max sentence is the evidence for requirement $k$. A requirement is shown as \emph{evidenced}
+if $c_k\ge0.50$, \emph{partial} if $0.40\le c_k<0.50$ and otherwise \emph{without evidence}. The two
+cut-offs were fixed from training-split probes and not tuned afterwards. Because $c_k$ is an embedding
+similarity it indicates topical relevance, not demonstrated competence, and the interface says so.
+
+\subsection{Features and fit model}
+Each pair yields 22 relational features in four groups: \emph{lexical} (TF-IDF cosine, length-normalised
+BM25 with the posting as query, IDF-weighted term overlap); \emph{semantic} (document cosine, the
+weighted coverage of Eq.~\eqref{eq:cov}, its required/preferred variants, a lower quartile and minimum
+over requirements, and the fractions of requirements above the two cut-offs); \emph{skills}
+(IDF- and weight-adjusted coverage of the posting's skills by the resume, Jaccard overlap, and the
+number of shared and missing required skills, from a 350-entry transparent lexicon); and
+\emph{experience} (estimated years of experience minus the years the posting asks for, an indicator
+that the requirement is met, and the same pair for education level). Features that describe only the
+resume or only the posting (for example years of experience on its own) are excluded; the next
+section explains why.
+
+The head is a three-class model over \{No, Potential, Good Fit\}. We train it without class
+re-weighting, so its probabilities $P(c\,|\,x)$ stay calibrated to the base rate, and decide by
+dividing by the training prior $\pi_c$:
+\begin{align}
+\hat c &= \arg\max_c \; P(c\,|\,x)/\pi_c, \label{eq:decide}\\
+S &= 100\,\big(P(\text{Good}\,|\,x)+\tfrac12 P(\text{Potential}\,|\,x)\big). \label{eq:score}
+\end{align}
+Eq.~\eqref{eq:decide} is the Bayes rule for balanced accuracy and maps to the bands Reject, Review and
+Shortlist; the middle band is where human review is expected. Candidate heads are a multinomial
+logistic regression with an $L_2$ penalty and a histogram gradient-boosted classifier
+\cite{pedregosa2011sklearn,friedman2001gbm}; selection uses the one-standard-error rule described in
+Section~\ref{sec:setup}.
+
+\subsection{Driver attribution}
+The contribution of feature $f$ to a candidate's score is the occlusion effect
+\begin{equation}
+\Delta_f = S(x)-S(x_{f\leftarrow\mu_f}),
+\end{equation}
+where $\mu_f$ is the training mean. Occlusion is model agnostic, deterministic and needs no extra library;
+effects are also summed per feature group for display. Section~\ref{sec:results} checks it with a
+deletion test rather than assuming it is faithful.
+
+\subsection{Counterfactual bias audit}\label{sec:audit}
+For a resume $R$ the audit builds variants that change one irrelevant cue and compares the score with a
+control. \emph{Name cells}: a name from each of ten race/ethnicity $\times$ gender cells (four names per
+cell) is prepended as a header. \emph{Proxy cues}: a final line is appended, always compared with a neutral
+line of similar length: an affinity-organisation membership (three groups), stereotyped hobbies (two
+codings), a career break for childcare versus for study, and a gender-marked organisation that the
+redactor is designed to remove. The statistics are the mean score change with a job-description-cluster
+bootstrap interval, the decision-flip rate, and the largest gap between name cells. Name-to-group association
+is statistical and imperfect; the lists are fixed in the code so the audit is reproducible.

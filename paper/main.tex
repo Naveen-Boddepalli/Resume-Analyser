@@ -1,0 +1,41 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\begin{document}
+
+\title{EviMatch: Evidence-Grounded and Bias-Audited Resume--Job Matching, with a Leakage Analysis of a Public Benchmark}
+
+\author{\IEEEauthorblockN{Naveen Boddepalli}
+\IEEEauthorblockA{[Department, Institution]\\
+[City, Country]\\
+1234naveenboddepalli@gmail.com}}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract.tex}
+\end{abstract}
+
+\begin{IEEEkeywords}
+resume screening, person--job fit, explainable AI, algorithmic fairness, sentence embeddings, benchmark leakage
+\end{IEEEkeywords}
+
+\input{sections/intro.tex}
+\input{sections/related.tex}
+\input{sections/method.tex}
+\input{sections/setup.tex}
+\input{sections/results_main.tex}
+\input{sections/results_audit.tex}
+\input{sections/conclusion.tex}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,62 @@
+\section{Related Work}\label{sec:related}
+\subsection{Person--job fit and resume matching}
+Early neural matchers treat fit as supervised learning on application histories. PJFNN encodes job
+requirements and candidate experience with convolutional networks and can indicate which requirement
+items a candidate satisfies \cite{zhu2018pjfnn}; APJFNN adds hierarchical attention over abilities
+\cite{qin2018apjfnn}. Both rely on large, proprietary logs. Sentence encoders removed some of that
+burden: conSultantBERT fine-tunes a Siamese SBERT on more than 270{,}000 consultant-labelled pairs
+\cite{lavi2021consultantbert}, and an end-to-end BERT pipeline ranks candidates after parsing resumes
+\cite{bhatia2019endtoend}. ConFit and ConFit~v2 address label scarcity with LLM-generated augmentations and
+contrastive learning, improving ranking over BM25 and commercial embeddings
+\cite{yu2024confit,yu2025confitv2}. A recent re-ranker distils an LLM teacher into a long-context student
+\cite{jouanneau2026longcontext}. On the systems side, Smart-Hiring combines entity extraction with
+embeddings in an inspectable pipeline \cite{khelkhal2025smarthiring}, and a multi-agent LLM framework
+scores resumes against HR ratings \cite{lo2025multiagent}.
+Table~\ref{tab:related} summarises the properties that matter for the setting studied here.
+
+\begin{table*}[t]
+\caption{Selected prior work and the property this paper adds. ``Training data'' is as stated by the
+cited paper; ``--'' means the paper's abstract does not state it.}
+\label{tab:related}
+\centering\small
+\begin{tabular}{p{3.0cm}p{3.3cm}p{3.4cm}p{3.0cm}p{3.7cm}}
+\toprule
+Work & Method & Training data & Evidence shown & Gap relevant to this paper \\
+\midrule
+PJFNN \cite{zhu2018pjfnn} & CNN, joint representation & Historical applications & Requirement items satisfied & Needs private logs; no bias audit stated \\
+APJFNN \cite{qin2018apjfnn} & RNN + ability-aware attention & Historical applications & Attention weights & Same data dependence; no bias audit stated \\
+conSultantBERT \cite{lavi2021consultantbert} & Fine-tuned Siamese SBERT & $>$270k expert-labelled pairs & Single similarity & Large labelled corpus; no requirement-level evidence \\
+Bhatia et al. \cite{bhatia2019endtoend} & BERT sentence-pair ranking & Parsed resumes & -- & Job text approximated by past experience text \\
+ConFit / v2 \cite{yu2024confit,yu2025confitv2} & LLM augmentation + contrastive & Interaction-labelled pairs & Single similarity & Needs an external LLM at training time \\
+Smart-Hiring \cite{khelkhal2025smarthiring} & NER + embeddings & Real resumes and postings & Extracted entities & Bias mitigation listed as future work \\
+Lo et al. \cite{lo2025multiagent} & Multi-agent LLM + retrieval & Online resumes (HR ratings) & LLM rationale & LLM cost and run-to-run variation; no demographic audit stated \\
+\textbf{EviMatch (this work)} & Requirement-level evidence + low-capacity head & Public benchmark, 8k pairs & Per-requirement sentence, skills, drivers & Audit of explicit and proxy cues; leakage-aware evaluation \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Retrieval building blocks}
+Sentence-BERT made dense similarity practical \cite{reimers2019sbert}, and distilled encoders such
+as MiniLM \cite{wang2020minilm} and general-purpose embedding families \cite{xiao2024cpack} give small,
+fast models. On heterogeneous retrieval tasks, BM25 \cite{robertson2009bm25} remains a strong zero-shot
+baseline \cite{thakur2021beir}, which is why we report lexical baselines alongside dense ones. ColBERT's
+late interaction scores a query by matching each query unit to its best document unit
+\cite{khattab2020colbert}; our requirement-level coverage applies the same idea at sentence level so that
+the best match can be displayed to a reviewer.
+
+\subsection{Skill extraction}
+SkillSpan annotates hard and soft skill spans in English postings \cite{zhang2022skillspan}; later work links
+mentions to large ontologies using synthetic LLM supervision \cite{decorte2023xmlc} or in-context prompting,
+which handles complex mentions but trails supervised models \cite{nguyen2024skillllm}. Those models need
+training or API access. We instead use a small transparent lexicon so that every extracted skill can be audited,
+and we state the coverage trade-off in Section~\ref{sec:conclusion}.
+
+\subsection{Bias in automated screening}
+The audit tradition goes back to a field experiment in which identical resumes with different names
+received different callback rates \cite{bertrand2004emily}. Applying the same design to embedding-based
+retrieval, Wilson and Caliskan found strong preference for white-associated names \cite{wilson2024silicon};
+audits of GPT and other language models report name- and gender-dependent scores or decisions
+\cite{armstrong2024silicon,an2024discriminate,an2025measuring,wang2024jobfair}. Scrubbing explicit indicators
+reduces but does not eliminate dependence, because proxies persist \cite{dearteaga2019biasinbios,gonen2019lipstick},
+and reviews of vendor claims urge evidence rather than assertion \cite{raghavan2020mitigating}. We follow this
+audit design and report residual proxy effects instead of claiming invariance.

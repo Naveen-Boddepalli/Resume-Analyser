@@ -1,0 +1,40 @@
+\section{Conclusion, Limitations and Future Work}\label{sec:conclusion}
+EviMatch shows that a transparent pipeline, trained on 8{,}000 public pairs, can order candidates better
+than similarity baselines when resumes and postings are genuinely unseen, while giving a reviewer the resume
+sentence behind every requirement and the signals behind every score. It also shows what such a system
+cannot yet do: accuracy is modest, the semantic evidence does not improve it, and redaction leaves
+measurable proxy effects. The leakage analysis is of independent use, because comparisons on the official
+split of this benchmark reward a model for recognising resumes.
+
+\textbf{Limitations.}
+(i) One benchmark, with undocumented label provenance, noisy labels (job-description identity explains
+27\% of label variance and six of seven duplicated pairs disagree), partly anonymised resumes, and no stated
+licence; conclusions may not transfer to other labelling schemes.
+(ii) Absolute accuracy is low enough that outcomes must not be automated.
+(iii) The skill lexicon is hand-written (350 entries) and English-only, and coverage outside technology and
+business roles is thin.
+(iv) Redaction is rule based and removes explicit identifiers; name-to-group assignment in the audit is
+statistical.
+(v) We could not evaluate an LLM-only baseline or audit one: the API key available to us had no request
+quota. Statements about language-model bias therefore rest on the cited literature, not on our measurements.
+(vi) The deletion test measures faithfulness to the model, not usefulness to people; no user study was run.
+(vii) The artefact deployed in the prototype is trained on all 8{,}000 pairs; all reported numbers come from
+held-out evaluations.
+
+\textbf{Future work.} Concrete next steps are: (a) run the prepared LLM baseline and audit with a pinned
+open-weight model and fixed prompts, so that the comparison is reproducible; (b) a study in which recruiters rate
+whether the displayed evidence changes their decisions and time; (c) validation on a second corpus whose labels
+come from a documented process; (d) link skills to an open ontology and report extraction coverage by
+occupation; (e) a pool-normalised ranking mode that uses the other candidates of a posting; and (f) an
+intersectional audit with larger samples and name lists validated against external data.
+
+\section*{Ethics and AI-Assistance Statement}
+The system is decision support for human reviewers. The benchmark contains resumes of unknown consent
+status; no personal data beyond the public benchmark were collected, and the prototype does not store uploads.
+Large-language-model tools were used to help write code and prose for this manuscript; all experiments were run,
+and every number checked, from the stored result files, and the authors are responsible for the content.
+
+\section*{Data and Code Availability}
+Code, experiment scripts, result files with provenance, the evaluation protocol with its deviation log, and
+this manuscript's sources are in the project repository (URL to be added at submission). The benchmark is
+available from its Hugging Face page; it is not redistributed.
