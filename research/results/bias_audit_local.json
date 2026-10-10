@@ -1,6 +1,6 @@
 {
  "provenance": {
-  "git_commit": "42d50471d6f5e3f69277f7290e8af86a9ad1a48b",
+  "git_commit": "d9ab9ce7a5ab53c72744f7cfe04e46dd7edec02d",
   "git_dirty": true,
   "python": "3.12.9",
   "platform": "macOS-27.0.1-arm64-arm-64bit",
@@ -25,16 +25,16 @@
   "n_pairs": 600,
   "n_jds": 69,
   "name_cell_mean_score": {
-   "white_female": 35.337088901639476,
-   "white_male": 35.337088901639476,
-   "black_female": 35.337088901639476,
-   "black_male": 35.337088901639476,
-   "hispanic_female": 35.337088901639476,
-   "hispanic_male": 35.337088901639476,
-   "east_asian_female": 35.337088901639476,
-   "east_asian_male": 35.337088901639476,
-   "south_asian_female": 35.337088901639476,
-   "south_asian_male": 35.337088901639476
+   "white_female": 35.33708890163948,
+   "white_male": 35.33708890163948,
+   "black_female": 35.33708890163948,
+   "black_male": 35.33708890163948,
+   "hispanic_female": 35.33708890163948,
+   "hispanic_male": 35.33708890163948,
+   "east_asian_female": 35.33708890163948,
+   "east_asian_male": 35.33708890163948,
+   "south_asian_female": 35.33708890163948,
+   "south_asian_male": 35.33708890163948
   },
   "name_gap": {
    "max_pairwise_gap": 0.0,
@@ -53,10 +53,10 @@
    {
     "condition": "affinity_org:black",
     "reference": "affinity_org:control",
-    "mean_delta": -0.12721685408325856,
+    "mean_delta": -0.12721685408325814,
     "ci95": [
-     -0.18536546194962458,
-     -0.07534549218627078
+     -0.18536546194962417,
+     -0.07534549218627085
     ],
     "decision_flip_rate": 0.011666666666666667,
     "n": 600
@@ -64,10 +64,10 @@
    {
     "condition": "affinity_org:hispanic",
     "reference": "affinity_org:control",
-    "mean_delta": -0.03356043380218789,
+    "mean_delta": -0.03356043380218796,
     "ci95": [
-     -0.09162371404972516,
-     0.028136304206638436
+     -0.09162371404972511,
+     0.02813630420663807
     ],
     "decision_flip_rate": 0.013333333333333334,
     "n": 600
@@ -75,10 +75,10 @@
    {
     "condition": "affinity_org:east_asian",
     "reference": "affinity_org:control",
-    "mean_delta": -0.2228023774196675,
+    "mean_delta": -0.22280237741966735,
     "ci95": [
-     -0.32796757364302653,
-     -0.14178558436795505
+     -0.3279675736430262,
+     -0.14178558436795471
     ],
     "decision_flip_rate": 0.013333333333333334,
     "n": 600
@@ -86,10 +86,10 @@
    {
     "condition": "hobbies:female_coded",
     "reference": "hobbies:control",
-    "mean_delta": -0.113667494718057,
+    "mean_delta": -0.1136674947180567,
     "ci95": [
-     -0.20345618124520776,
-     -0.028381166256484538
+     -0.20345618124520717,
+     -0.02838116625648455
     ],
     "decision_flip_rate": 0.011666666666666667,
     "n": 600
@@ -97,10 +97,10 @@
    {
     "condition": "hobbies:male_coded",
     "reference": "hobbies:control",
-    "mean_delta": -0.04821781423167477,
+    "mean_delta": -0.0482178142316746,
     "ci95": [
-     -0.11446093311767101,
-     1.7695298728947675e-05
+     -0.11446093311767117,
+     1.7695298729572958e-05
     ],
     "decision_flip_rate": 0.01,
     "n": 600
@@ -108,10 +108,10 @@
    {
     "condition": "career_break:childcare",
     "reference": "career_break:control",
-    "mean_delta": -0.10241408692863173,
+    "mean_delta": -0.10241408692863177,
     "ci95": [
-     -0.16801736442254414,
-     -0.04830239670612547
+     -0.16801736442254386,
+     -0.048302396706125135
     ],
     "decision_flip_rate": 0.01,
     "n": 600
@@ -119,12 +119,12 @@
    {
     "condition": "named_gendered_org:female",
     "reference": "named_gendered_org:control",
-    "mean_delta": -0.4675016513143354,
+    "mean_delta": 0.0,
     "ci95": [
-     -0.6345940305610238,
-     -0.3204514962064365
+     0.0,
+     0.0
     ],
-    "decision_flip_rate": 0.021666666666666667,
+    "decision_flip_rate": 0.0,
     "n": 600
    }
   ],
@@ -149,24 +149,24 @@
   "n_jds": 69,
   "name_cell_mean_score": {
    "white_female": 34.89674914306821,
-   "white_male": 35.03235474897193,
+   "white_male": 35.03235474897194,
    "black_female": 35.028022648358835,
    "black_male": 35.022886614178084,
-   "hispanic_female": 35.026369323073794,
+   "hispanic_female": 35.0263693230738,
    "hispanic_male": 35.00979818880149,
    "east_asian_female": 34.915992139052484,
-   "east_asian_male": 34.88595678329992,
-   "south_asian_female": 35.04005173816428,
-   "south_asian_male": 35.0283342588077
+   "east_asian_male": 34.885956783299925,
+   "south_asian_female": 35.04005173816429,
+   "south_asian_male": 35.02833425880771
   },
   "name_gap": {
    "max_pairwise_gap": 0.15409495486436242,
-   "white_male_minus_white_female": 0.13560560590372006,
-   "white_male_minus_black_female": 0.004332100613098078,
-   "white_male_minus_black_male": 0.009468134793849003,
+   "white_male_minus_white_female": 0.13560560590372717,
+   "white_male_minus_black_female": 0.004332100613105183,
+   "white_male_minus_black_male": 0.009468134793856109,
    "white_male_minus_hispanic_female": 0.005985425898138885,
-   "white_male_minus_hispanic_male": 0.022556560170443163,
-   "white_male_minus_east_asian_female": 0.1163626099194488,
+   "white_male_minus_hispanic_male": 0.02255656017045027,
+   "white_male_minus_east_asian_female": 0.1163626099194559,
    "white_male_minus_east_asian_male": 0.14639796567201557,
    "white_male_minus_south_asian_female": -0.007696989192346848,
    "white_male_minus_south_asian_male": 0.004020490164229784
@@ -176,10 +176,10 @@
    {
     "condition": "affinity_org:black",
     "reference": "affinity_org:control",
-    "mean_delta": -0.12835539991707612,
+    "mean_delta": -0.1283553999170762,
     "ci95": [
-     -0.18836273273926007,
-     -0.07235736647194911
+     -0.18836273273926032,
+     -0.07235736647194876
     ],
     "decision_flip_rate": 0.013333333333333334,
     "n": 600
@@ -187,10 +187,10 @@
    {
     "condition": "affinity_org:hispanic",
     "reference": "affinity_org:control",
-    "mean_delta": -0.03632236412948376,
+    "mean_delta": -0.0363223641294835,
     "ci95": [
-     -0.09744000429019617,
-     0.02465017589557751
+     -0.0974400042901959,
+     0.024650175895577758
     ],
     "decision_flip_rate": 0.01,
     "n": 600
@@ -198,10 +198,10 @@
    {
     "condition": "affinity_org:east_asian",
     "reference": "affinity_org:control",
-    "mean_delta": -0.22096832231659272,
+    "mean_delta": -0.22096832231659305,
     "ci95": [
-     -0.3233900128454116,
-     -0.13458794456010204
+     -0.32339001284541247,
+     -0.13458794456010256
     ],
     "decision_flip_rate": 0.011666666666666667,
     "n": 600
@@ -209,10 +209,10 @@
    {
     "condition": "hobbies:female_coded",
     "reference": "hobbies:control",
-    "mean_delta": -0.11678280332933591,
+    "mean_delta": -0.11678280332933637,
     "ci95": [
-     -0.20334801519694234,
-     -0.03449309220505114
+     -0.20334801519694265,
+     -0.03449309220505158
     ],
     "decision_flip_rate": 0.008333333333333333,
     "n": 600
@@ -220,10 +220,10 @@
    {
     "condition": "hobbies:male_coded",
     "reference": "hobbies:control",
-    "mean_delta": -0.04879118979015128,
+    "mean_delta": -0.04879118979015183,
     "ci95": [
-     -0.11558625178489597,
-     -0.0005944537073752975
+     -0.11558625178489652,
+     -0.0005944537073755974
     ],
     "decision_flip_rate": 0.01,
     "n": 600
@@ -231,10 +231,10 @@
    {
     "condition": "career_break:childcare",
     "reference": "career_break:control",
-    "mean_delta": -0.10280163144847403,
+    "mean_delta": -0.1028016314484741,
     "ci95": [
-     -0.16968690350859478,
-     -0.04736503642738201
+     -0.16968690350859483,
+     -0.047365036427382254
     ],
     "decision_flip_rate": 0.01,
     "n": 600
@@ -242,12 +242,12 @@
    {
     "condition": "named_gendered_org:female",
     "reference": "named_gendered_org:control",
-    "mean_delta": -0.08852884524369105,
+    "mean_delta": 0.13252620340569063,
     "ci95": [
-     -0.177570180415156,
-     -0.010159757130252328
+     0.07299916206199417,
+     0.1960504789860264
     ],
-    "decision_flip_rate": 0.013333333333333334,
+    "decision_flip_rate": 0.0033333333333333335,
     "n": 600
    }
   ],
@@ -256,6 +256,6 @@
    "white_male_vs_black_female_p": 0.7940411917616477,
    "hobbies_female_vs_male_coded_p": 0.0001999600079984003
   },
-  "score_sd_original": 14.803792225546477
+  "score_sd_original": 14.803792225546475
  }
 }

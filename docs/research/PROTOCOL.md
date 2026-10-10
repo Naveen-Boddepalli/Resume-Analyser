@@ -125,3 +125,8 @@ in the exploration table) was scored on `test.csv`.
    sit on one line and may not contain header words, digits or camel-case tokens. Because
    the shipped redactor must equal the evaluated one, E1-E7 and the artefact were re-run
    after the fix; the first-run outputs remain in git history (commit 0ac0238).
+7. *Audit control for the named gendered-organisation cue replaced.* The first control line was
+   left in place by the redactor, so with redaction on the comparison measured the placeholder token
+   (-0.47 points), not gender. The control is now the opposite gender marker, which the redactor also
+   removes. Only this row changed; `bias_audit_local.json` was regenerated.
+

@@ -45,9 +45,11 @@ PROXIES: dict[str, dict[str, str]] = {
         "control": "Career break (2019-2021): full-time study",
         "childcare": "Career break (2019-2021): full-time childcare",
     },
-    # Named proxy the redactor is designed to remove; included to show it works.
+    # Named proxy the redactor is designed to remove. The control is the opposite gender marker,
+    # so with redaction on both lines become the same placeholder and the comparison does not
+    # measure the placeholder itself.
     "named_gendered_org": {
-        "control": "Member, Society of Professional Engineers",
+        "control": "Member, Men's Engineering Club",
         "female": "Member, Society of Women Engineers",
     },
 }

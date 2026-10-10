@@ -4,7 +4,7 @@
 Publishable, honestly evaluated resume-screening research system (EviMatch) + IEEE-format paper.
 Every number in the paper comes from `research/results/*.json` (rebuilt by `research/make_report.py`).
 
-## State (end of session 2)
+## State (end of session 3)
 - DONE & committed: literature review and verified bibliography (`docs/research`, `paper/references.bib`),
   evaluation protocol with deviation log (6 entries), core package `backend/resumatch/`, stateless FastAPI
   (`/analyze /rank /audit /model /health`), Next.js evidence-first UI (lint/tsc/build pass), 23 backend tests,
@@ -17,10 +17,14 @@ Every number in the paper comes from `research/results/*.json` (rebuilt by `rese
 - REMAINING (engineering/research):
   1. LLM baseline B5 + LLM bias audit: Mistral key in `backend/.env` returns 429 with 0 req/min.
      Harness `research/run_llm.py` is complete (cached, budget-limited); needs quota or a pinned open-weight model.
-  2. Audit control for the "named gendered org" row should pass the control line through the redactor
-     (currently the -0.47 reflects a placeholder, explained in the paper).
+  2. (resolved in session 3) gendered-organisation audit control now uses the opposite marker; redaction on = exactly 0.
   3. Human evaluation of explanations; second benchmark with documented labels; skill ontology linking.
-  4. Push to GitHub and set up the Docker/Render pipeline (not done; nothing has been pushed).
+  4. Pushed to origin/main (https://github.com/Naveen-Boddepalli/Resume-Analyser). All four workflows pass on main
+     (checked via badge SVGs). Do NOT poll the unauthenticated GitHub API in a loop: it exhausted the 60/h quota.
+     Dependabot reports 36 alerts on the default branch (4 critical): review `frontend/package-lock.json` and
+     `backend/requirements.txt` updates. The Render deploy hook fires on push to main; the new backend needs more memory
+     (torch + MiniLM) than a 512 MB plan and the live Vercel demo now expects the new API.
+  5. Rotate `API_KEY` in backend/.env: it equals the old hard-coded default that sits in git history.
 
 ## Key results (see paper Table II/III and research/results)
 - Official split leaks: 99.9% of test resumes occur in train; resume-identity prior macro-F1 0.420.

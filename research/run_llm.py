@@ -168,8 +168,6 @@ def main(mode: str) -> None:
             index.append((f"names:{cell}", i))
     for family, lines in PROXIES.items():
         for key, line in lines.items():
-            if family == "named_gendered_org" and key == "control":
-                continue  # identical to affinity_org control
             for i, r in enumerate(audit.itertuples()):
                 jobs.append((with_line(r.resume_text, line), r.job_description_text, ""))
                 index.append((f"{family}:{key}", i))
