@@ -1,6 +1,6 @@
 {
  "provenance": {
-  "git_commit": "c27908ec4afa564415a02f6c8eabbdfd79ecc4c1",
+  "git_commit": "0a5f211b9da58739aeb7d349cc3a518757b3e1b6",
   "git_dirty": true,
   "python": "3.12.9",
   "platform": "macOS-27.0.1-arm64-arm-64bit",
@@ -13,22 +13,22 @@
   "as_of": "2024-07-01"
  },
  "n_pairs": 580,
- "mean_drop_cited": 7.730206471132768,
- "mean_drop_random": 1.7888370888314125,
- "mean_difference": 5.941369382301357,
+ "mean_drop_cited": 7.727168298323155,
+ "mean_drop_random": 1.7773236437070847,
+ "mean_difference": 5.9498446546160695,
  "ci95_difference": [
-  5.022178003781065,
-  6.917771816931239
+  5.033370396902061,
+  6.9195776832189795
  ],
  "cited_larger_share": 0.8672413793103448,
  "permutation_p": 0.0001999600079984003,
- "mean_sentences_cited": 5.082758620689655,
+ "mean_sentences_cited": 5.084482758620689,
  "model": {
   "kind": "logreg",
   "params": {
    "C": 0.003
   },
-  "mean": 0.48173694350292473,
-  "se": 0.020322624887355933
+  "mean": 0.48189531149533515,
+  "se": 0.019919272260184914
  }
 }
